@@ -23,6 +23,15 @@ on:
         required: false
         default: 'true'
         type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
+    secrets:
+      ARM_USERNAME:
+        description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
+        required: false
+        type: string
+      ARM_PASSWORD:
+        description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
+        required: false
+        type: string
 
 jobs:
   build:
