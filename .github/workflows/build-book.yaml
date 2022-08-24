@@ -74,7 +74,7 @@ jobs:
       - name: Build the book
         with:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
-          ARM_PASSWORD: ${{ secrets.ARM_USERNAME }}
+          ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
         run: |
           jupyter-book build ${{ inputs.path_to_notebooks }}
       - name: Zip the book
