@@ -23,6 +23,17 @@ on:
         required: false
         default: 'true'
         type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
+    secrets:
+      ARM_USERNAME:
+        description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
+        required: false
+        default: ''
+        type: string
+      ARM_PASSWORD:
+        description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   build:
@@ -61,6 +72,9 @@ jobs:
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
       - name: Build the book
+        with:
+          ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
+          ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
         run: |
           jupyter-book build ${{ inputs.path_to_notebooks }}
       - name: Zip the book
