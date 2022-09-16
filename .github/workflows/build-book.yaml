@@ -27,13 +27,9 @@ on:
       ARM_USERNAME:
         description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
         required: false
-        default: ''
-        type: string
       ARM_PASSWORD:
         description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
         required: false
-        default: ''
-        type: string
 
 jobs:
   build:
