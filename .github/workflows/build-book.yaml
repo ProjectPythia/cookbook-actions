@@ -68,7 +68,7 @@ jobs:
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
       - name: Build the book
-        with:
+        env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
         run: |
