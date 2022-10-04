@@ -23,12 +23,12 @@ on:
         required: false
         default: 'true'
         type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
-      binder_url:
-        description: 'URL for the BinderHub service to be used to execute notebooks'
+      binder_url:  # This should default to the binder URL in the jupyterbook config file
+        description: 'URL for the BinderHub service to be used to execute notebooks'  
         required: false
         default: 'http://binder.mypythia.org'
         type: string
-      binder_build_env_repo:
+      binder_build_env_repo:  # this should just default to the current repo. 
         description: 'Repository where the execution environment for the Binder is defined'
         required: true 
         type: string
@@ -79,6 +79,16 @@ jobs:
           inputs.use_cached_environment != 'true'
           || steps.cache.outputs.cache-hit != 'true'
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
+
+      - name: Get Binder URL from config file
+        shell: python
+        run: |
+          import yaml
+          with open('_config.yml') as fh:
+              dictionary_data = yaml.safe_load(fh)
+          binder_url = dictionary_data['sphinx']['config']['html_theme_options']['launch_buttons']['binderhub_url']
+
+#  How can we get this URL out of Python and into an environment variable that we can use in a later step?
 
       - name: Execute notebooks via binderbot 
         env:
