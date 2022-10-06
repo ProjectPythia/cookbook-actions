@@ -2,6 +2,12 @@ name: deploy-book
 
 on:
   workflow_call:
+    inputs:
+      destination_dir:
+        description: 'Path to publish to on GitHub Pages, relative to site root. We use this to deploy previews in a subdirectory.'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   deploy:
@@ -29,3 +35,4 @@ jobs:
           publish_dir: _build/html
           enable_jekyll: false
           keep_files: true  # This preserves existing previews from open PRs
+          destination_dir: ${{ inputs.destination_dir }}
