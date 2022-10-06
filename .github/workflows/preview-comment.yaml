@@ -55,7 +55,6 @@ jobs:
       - name: Finalize preview comment
         if: |
           github.event.workflow_run.conclusion == 'success'
-          && steps.find-pull-request.outputs.number != ''
           && steps.fc.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v2
         with:
