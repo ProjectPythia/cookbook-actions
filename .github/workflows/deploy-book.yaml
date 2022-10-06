@@ -7,6 +7,7 @@ on:
         description: 'Name of the artifact (zipped book) created by previous build step'
         required: false
         default: book-zip-${{ github.event.number }}
+        type: string
       destination_dir:
         description: 'Path to publish to on GitHub Pages, relative to site root. We use this to deploy previews in a subdirectory.'
         required: false
