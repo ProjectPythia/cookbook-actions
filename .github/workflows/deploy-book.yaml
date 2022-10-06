@@ -3,6 +3,10 @@ name: deploy-book
 on:
   workflow_call:
     inputs:
+      artifact_name:
+        description: 'Name of the artifact (zipped book) created by previous build step'
+        required: false
+        default: book-zip-${{ github.event.number }}
       destination_dir:
         description: 'Path to publish to on GitHub Pages, relative to site root. We use this to deploy previews in a subdirectory.'
         required: false
@@ -15,11 +19,11 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-    steps:
+    steps: 
       - name: Download Artifact Book
         uses: actions/download-artifact@v3
         with:
-          name: book-zip-${{ github.event.number }}
+          name: ${{ inputs.artifact_name }}
 
       - name: Unzip the book
         run: |
