@@ -1,0 +1,38 @@
+name: find-pull-request
+
+on:
+  workflow_call:
+
+jobs:
+  find-pr:
+    runs-on: ubuntu-latest
+    outputs:
+      number: ${{ steps.find-pull-request.outputs.number }}
+      sha: ${{ steps.find-pull-request.outputs.sha }}
+    steps:
+      - name: Find Pull Request
+        uses: actions/github-script@v6
+        id: find-pull-request
+        with:
+          script: |
+            let pullRequestNumber = ''
+            let pullRequestHeadSHA = ''
+            core.info('Finding pull request...')
+            const pullRequests = await github.rest.pulls.list({owner: context.repo.owner, repo: context.repo.repo})
+            for (let pullRequest of pullRequests.data) {
+              if(pullRequest.head.sha === context.payload.workflow_run.head_commit.id) {
+                  pullRequestHeadSHA = pullRequest.head.sha
+                  pullRequestNumber = pullRequest.number
+                  break
+              }
+            }
+            core.setOutput('number', pullRequestNumber)
+            core.setOutput('sha', pullRequestHeadSHA)
+            if(pullRequestNumber === '') {
+              core.info(
+                 `No pull request associated with git commit SHA: ${context.payload.workflow_run.head_commit.id}`
+              )
+            }
+            else{
+              core.info(`Found pull request ${pullRequestNumber}, with head sha: ${pullRequestHeadSHA}`)
+            }
