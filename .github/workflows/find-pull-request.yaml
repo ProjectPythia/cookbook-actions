@@ -2,6 +2,13 @@ name: find-pull-request
 
 on:
   workflow_call:
+    outputs:
+      number:
+        description: "The Pull Request number"
+        value: ${{ jobs.find-pr.outputs.number }}
+      sha:
+        description: "The SHA of the commit associated with this PR"
+        value: ${{ jobs.find-pr.outputs.sha }}
 
 jobs:
   find-pr:
