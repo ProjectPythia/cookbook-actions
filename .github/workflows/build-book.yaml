@@ -26,7 +26,7 @@ on:
       artifact_name:
         description: 'The name to assign to the built book artifact.'
         required: false
-        default: 'book-zip-${{github.event.number}}'
+        default: 'book-zip'
         type: string
 
     secrets:
