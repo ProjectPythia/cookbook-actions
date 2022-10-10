@@ -13,7 +13,12 @@ on:
         required: false
         default: ''
         type: string
-
+      is_preview:
+        description: 'Are we deploying a preview?'
+        required: false
+        default: 'false'
+        type: string
+      
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -21,9 +26,21 @@ jobs:
       run:
         shell: bash -l {0}
     steps: 
-      - name: Download Artifact Book
+      - name: Download merged artifact
+        if: inputs.is_preview != 'true'
         uses: actions/download-artifact@v3
         with:
+          name: ${{ inputs.artifact_name }}
+
+      # For the preview, the official download-artifact action doesn't work
+      # because the artifact is created by a different workflow
+      - name: Download preview artifact
+        if: inputs.is_preview == 'true'
+        uses: dawidd6/action-download-artifact@v2.23.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build-book.yaml
+          run_id: ${{ github.event.workflow_run.id }}
           name: ${{ inputs.artifact_name }}
 
       - name: Unzip the book
