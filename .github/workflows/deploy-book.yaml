@@ -13,6 +13,11 @@ on:
         required: false
         default: ''
         type: string
+      sha:
+        description: "The SHA of the commit that needs deploying"
+        required: false
+        default: ${{ github.sha }}
+        type: string
 
 jobs:
   deploy:
@@ -26,7 +31,8 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-book.yaml
-          run_id: ${{ github.event.workflow_run.id }}
+          commit: ${{ inputs.sha }}
+          # run_id: ${{ github.event.workflow_run.id }}
           name: ${{ inputs.artifact_name }}
 
       - name: Unzip the book
