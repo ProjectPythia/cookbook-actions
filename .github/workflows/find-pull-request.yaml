@@ -6,27 +6,30 @@ on:
       number:
         description: "The Pull Request number"
         value: ${{ jobs.find-pr.outputs.number }}
-      # sha:
-      #   description: "The SHA of the commit associated with this PR"
-      #   value: ${{ jobs.find-pr.outputs.sha }}
+      sha:
+        description: "The SHA of the commit associated with this PR"
+        value: ${{ jobs.find-pr.outputs.sha }}
 
 jobs:
   find-pr:
     runs-on: ubuntu-latest
     outputs:
-      number: ${{ steps.find-pull-request.outputs.number }}
-      # sha: ${{ steps.find-pull-request.outputs.sha }}
+      number: ${{ steps.find-pull-request.outputs.pullRequestNumber }}
+      sha: ${{ steps.find-pull-request.outputs.mergeCommitSha }}
     steps:
-      - run: echo "The value of github.sha is ${{ github.sha }}"
       - name: Find Pull Request
-        uses: 8BitJonny/gh-get-current-pr@2.1.2
-        with:
-          # Authetication token to access GitHub APIs. (Can be omitted by default.)
-          github-token: ${{ github.token }}
-          # Verbose setting SHA when using Pull_Request event trigger to fix #16. (For push even trigger this is not necessary.)
-          # sha: ${{ github.sha }}
+        # uses: 8BitJonny/gh-get-current-pr@2.1.2
+        # with:
+        #   # Authetication token to access GitHub APIs. (Can be omitted by default.)
+        #   github-token: ${{ github.token }}
+        #   # Verbose setting SHA when using Pull_Request event trigger to fix #16. (For push even trigger this is not necessary.)
+        #   # sha: ${{ github.sha }}
         # uses: actions/github-script@v6
         id: find-pull-request
+        uses: potiuk/get-workflow-origin@v1_1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sourceRunId: ${{ github.event.workflow_run.id }}
         # with:
         #   script: |
         #     let pullRequestNumber = ''
@@ -52,6 +55,6 @@ jobs:
         #     }
      # This will echo "Your PR is 7", or be skipped if there is no current PR.
       - run: echo "Your PR is ${PR}"
-        if: success() && steps.find-pull-request.outputs.number
+        if: success() && steps.find-pull-request.outputs.pullRequestNumber
         env:
-          PR: ${{ steps.find-pull-request.outputs.number }}
+          PR: ${{ steps.find-pull-request.outputs.pullRequestNumber }}
