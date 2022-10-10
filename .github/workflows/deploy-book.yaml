@@ -31,7 +31,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-book.yaml
-          commit: ${{ inputs.sha }}
+          # commit: ${{ inputs.sha }}
           # run_id: ${{ github.event.workflow_run.id }}
           name: ${{ inputs.artifact_name }}
 
