@@ -21,14 +21,6 @@ jobs:
       run:
         shell: bash -l {0}
     steps: 
-      # - name: Get pull request information
-      #   uses: potiuk/get-workflow-origin@v1_1
-      #   if: ${{ inputs.is_preview == 'true' }}
-      #   id: source-run-info
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     sourceRunId: ${{ github.event.workflow_run.id }}
-
       - name: Download Artifact Book
         uses: dawidd6/action-download-artifact@v2.23.0
         with:
