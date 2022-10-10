@@ -17,6 +17,7 @@ jobs:
       number: ${{ steps.find-pull-request.outputs.number }}
       # sha: ${{ steps.find-pull-request.outputs.sha }}
     steps:
+      - run: echo "The value of github.sha is ${{ github.sha }}"
       - name: Find Pull Request
         uses: 8BitJonny/gh-get-current-pr@2.1.2
         with:
@@ -53,4 +54,4 @@ jobs:
       - run: echo "Your PR is ${PR}"
         if: success() && steps.find-pull-request.outputs.number
         env:
-          PR: ${{ steps.findPr.outputs.pr }}
+          PR: ${{ steps.find-pull-request.outputs.number }}
