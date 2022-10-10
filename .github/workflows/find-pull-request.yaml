@@ -18,7 +18,12 @@ jobs:
       # sha: ${{ steps.find-pull-request.outputs.sha }}
     steps:
       - name: Find Pull Request
-        uses: jwalton/gh-find-current-pr@v1
+        uses: 8BitJonny/gh-get-current-pr@2.1.2
+        with:
+          # Authetication token to access GitHub APIs. (Can be omitted by default.)
+          github-token: ${{ github.token }}
+          # Verbose setting SHA when using Pull_Request event trigger to fix #16. (For push even trigger this is not necessary.)
+          sha: ${{ github.sha }}
         # uses: actions/github-script@v6
         id: find-pull-request
         # with:
