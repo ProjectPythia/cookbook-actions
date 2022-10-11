@@ -9,11 +9,13 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout template repo
+        uses: actions/checkout@v3
         with:
           repository: ProjectPythiaCookbooks/cookbook-template
 
   build:
+    needs: get-code
     uses: ./.github/workflows/build-book.yaml
     with:
       environment_name: cookbook-dev
