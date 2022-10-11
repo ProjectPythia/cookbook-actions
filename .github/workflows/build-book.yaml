@@ -23,6 +23,12 @@ on:
         required: false
         default: 'true'
         type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
+      artifact_name:
+        description: 'The name to assign to the built book artifact.'
+        required: false
+        default: 'book-zip'
+        type: string
+
     secrets:
       ARM_USERNAME:
         description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
@@ -84,5 +90,5 @@ jobs:
       - name: Upload zipped book artifact
         uses: actions/upload-artifact@v3
         with:
-          name: book-zip-${{github.event.number}}
+          name: ${{ inputs.artifact_name }}
           path: ./book.zip
