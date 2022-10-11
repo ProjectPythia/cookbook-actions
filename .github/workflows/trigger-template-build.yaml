@@ -2,24 +2,39 @@ name: trigger-template-build
 on:
   pull_request:
 
-jobs:
-  get-code:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-    steps:
-      - name: Checkout template repo
-        uses: actions/checkout@v3
-        with:
-          repository: ProjectPythiaCookbooks/cookbook-template
+# jobs:
+#   get-code:
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         shell: bash -l {0}
+#     steps:
+#       - name: Checkout template repo
+#         uses: actions/checkout@v3
+#         with:
+#           repository: ProjectPythiaCookbooks/cookbook-template
 
-  build:
-    needs: get-code
-    uses: ./.github/workflows/build-book.yaml
-    with:
-      environment_name: cookbook-dev
-      environment_file: environment.yml
-      path_to_notebooks: ./
-      use_cached_environment: 'true'  # This is default, not strickly needed. Set to 'false' to always build a new environment
+#   build:
+#     needs: get-code
+#     uses: ./.github/workflows/build-book.yaml
+#     with:
+#       environment_name: cookbook-dev
+#       environment_file: environment.yml
+#       path_to_notebooks: ./
+#       use_cached_environment: 'true'  # This is default, not strickly needed. Set to 'false' to always build a new environment
       
+jobs:
+  test-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create workflow dispatch to CookbookTemplate repo
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'ProjectPythiaCookbooks',
+              repo: 'cookbook-template',
+              workflow_id: 'nightly-build.yaml',
+              ref: 'main'
+            })
