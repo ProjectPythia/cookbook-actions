@@ -96,7 +96,14 @@ jobs:
           binder_url = dictionary_data['sphinx']['config']['html_theme_options']['launch_buttons']['binderhub_url']
           print(binder_url)
           EOT
+          echo "This is the python code"
+          cat binder_url.py
+          echo "Now we're going to run the code!"
+          python get_binder_url.py | ( read URL; echo "{binder_url}={$URL}" ) 
+          echo "Now we're going to run it again but store the results in GITHUB_OUTPUT"
           python get_binder_url.py | ( read URL; echo "{binder_url}={$URL}" ) >> $GITHUB_OUTPUT
+          echo "The contents of the GITHBUB_OUTPUT is:"
+          echo $GITHUB_OUTPUT
         # This looks convoluted but should work for setting step output...
 
       - name: Execute notebooks via binderbot 
@@ -104,6 +111,8 @@ jobs:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
         run: |
+          echo "Retrieved the binder URL:"
+          echo ${{ steps.get-binder-url.outputs.binder_url }}
           python -m binderbot.cli --binder-url ${{ steps.get-binder-url.outputs.binder_url }} --repo ${{ inputs.binder_build_env_repo }} --ref main ${{ inputs.binder_notebooks_to_build }}
       
       - name: Build the book
