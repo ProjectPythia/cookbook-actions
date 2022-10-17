@@ -120,7 +120,7 @@ jobs:
         #  and thus requires building a new image on the binder?
       - name: Build the book
         run: |
-          jupyter-book build ${{ inputs.path_to_notebooks }}
+          jupyter-book build ${{ inputs.path_to_source }}
 
       - name: Zip the book
         run: |
@@ -129,7 +129,7 @@ jobs:
           if [ -f book.zip ]; then
               rm -rf book.zip
           fi
-          zip -r book.zip ${{ inputs.path_to_notebooks }}/_build/html
+          zip -r book.zip ${{ inputs.path_to_source }}/_build/html
 
       - name: Upload zipped book artifact
         uses: actions/upload-artifact@v3
