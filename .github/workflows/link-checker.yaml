@@ -6,14 +6,14 @@ on:
       environment_name:
         description: 'Name of conda environment to activate'
         required: false
-        default: 'cookbook-dev'
+        default: 'book-build'
         type: string
       environment_file:
         description: 'Name of conda environment file'
         required: false
-        default: 'environment.yml'
+        default: 'book-build-environment.yml'
         type: string
-      path_to_notebooks:
+      path_to_source:
         description: 'Location of the JupyterBook source relative to repo root'
         required: false
         default: './'
