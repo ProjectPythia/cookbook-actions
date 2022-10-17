@@ -64,15 +64,6 @@ jobs:
           || steps.cache.outputs.cache-hit != 'true'
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
-      - name: Disable notebook execution
-        shell: python
-        run: |
-          import yaml
-          with open('${{ inputs.path_to_notebooks }}/_config.yml') as f:
-            data = yaml.safe_load(f)
-          data['execute']['execute_notebooks'] = 'off'
-          with open('${{ inputs.path_to_notebooks }}/_config.yml', 'w') as f:
-            yaml.dump(data, f)
       - name: Check external links
         run: |
-          jupyter-book build --builder linkcheck ${{ inputs.path_to_notebooks }}
+          jupyter-book build --builder linkcheck ${{ inputs.path_to_source }}
