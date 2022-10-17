@@ -113,13 +113,11 @@ jobs:
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
         run: |
           URL=$(cat binder_url)
-          echo "Retrieved the binder URL:"
-          echo $URL
           NOTEBOOKS=$(cat notebook_paths)
-          echo "Retrieved the notebook paths:"
-          echo $NOTEBOOKS
           python -m binderbot.cli --binder-url $URL --repo ${{ inputs.binder_build_env_repo }} --ref main $NOTEBOOKS
-      
+        # this currently hard-codes the 'main' branch
+        #  what should be our approach to the use case where the PR introduces changes to the environment.yml file
+        #  and thus requires building a new image on the binder?
       - name: Build the book
         run: |
           jupyter-book build ${{ inputs.path_to_notebooks }}
