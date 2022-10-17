@@ -30,7 +30,8 @@ on:
         type: string
       binder_build_env_repo:  # this should just default to the current repo. 
         description: 'Repository where the execution environment for the Binder is defined'
-        required: true 
+        required: false
+        default: ${{ github.repository }}
         type: string
       binder_notebooks_to_build:
         description: 'Path to notebook files to execute on the Binder'

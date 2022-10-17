@@ -1,0 +1,32 @@
+name: Parse Jupyterbook files
+
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      binder_url:
+        description: 'URL for the BinderHub service to be used to execute notebooks' 
+        value: ${{ jobs.parse_files.outputs.binder_url }}
+      toc_files:
+        description: "List of files appearing the table of contents"
+        value: ${{ jobs.parse_files.outputs.toc_files }}
+
+jobs:
+  parse_files:
+    runs-on: ubuntu-latest
+    # Map the job outputs to step outputs
+    outputs:
+      binder_url: ${{ steps.get-binder-url.outputs.binder_url }}
+      toc_files: ${{ steps.get-toc-files.outputs.toc_files }}
+    steps:
+      - id: get-binder-url
+        shell: python
+        run: |
+          import yaml, os
+          with open('_config.yml') as fh:
+              dictionary_data = yaml.safe_load(fh)
+          binder_url = dictionary_data['sphinx']['config']['html_theme_options']['launch_buttons']['binderhub_url']
+          os.environ['GITHUB_OUTPUT'] = binder_url
+        run: echo "SELECTED_COLOR=green" >> $GITHUB_OUTPUT
+      - id: step2
+        run: echo "::set-output name=secondword::world"
