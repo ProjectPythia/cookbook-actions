@@ -23,10 +23,10 @@ on:
         required: false
         default: 'true'
         type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
-      binder_url:  # This should default to the binder URL in the jupyterbook config file
-        description: 'URL for the BinderHub service to be used to execute notebooks'  
+      use_binder:
+        description: 'Flag for whether we should execute notebooks via binderbot'
         required: false
-        default: 'http://binder.mypythia.org'
+        default: 'true'
         type: string
       binder_build_env_repo:  # this should just default to the current repo. 
         description: 'Repository where the execution environment for the Binder is defined'
@@ -84,6 +84,8 @@ jobs:
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
       - name: Get Binder URL from config file
+        if: |
+          inputs.use_binder == 'true'
         shell: python
         run: |
           import yaml, os
@@ -95,6 +97,8 @@ jobs:
           outfile.close()
 
       - name: Get paths to notebook files
+        if: |
+          inputs.use_binder == 'true'
         # This will find ALL *.ipynb files in the repo
         #  It would be better to cross-check this against the _toc.yml file
         #  to avoid unneccesary execution of notebooks that aren't included in the book
@@ -107,18 +111,23 @@ jobs:
               outfile.write(path + ' ')
           outfile.close()
 
-      - name: Execute notebooks via binderbot 
+      - name: Execute notebooks via binderbot
+        if: |
+          inputs.use_binder == 'true'
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
         run: |
           URL=$(cat binder_url)
           NOTEBOOKS=$(cat notebook_paths)
+          echo 'Retrieved binder_url: $URL'
+          echo 'We will now execute these notebooks: $NOTEBOOKS'
           python -m binderbot.cli --binder-url $URL --repo ${{ inputs.binder_build_env_repo }} --ref main $NOTEBOOKS
         # this currently hard-codes the 'main' branch
         #  what should be our approach to the use case where the PR introduces changes to the environment.yml file
         #  and thus requires building a new image on the binder?
       - name: Build the book
+        # Assumption is that if use_binder != 'true' then the _config.yml file must be set to execute notebooks during build
         run: |
           jupyter-book build ${{ inputs.path_to_source }}
 
