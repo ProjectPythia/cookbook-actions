@@ -33,10 +33,6 @@ on:
         required: false
         default: ${{ github.repository }}
         type: string
-      binder_notebooks_to_build:
-        description: 'Path to notebook files to execute on the Binder'
-        required: true
-        type: string
       artifact_name:
         description: 'The name to assign to the built book artifact.'
         required: false
@@ -88,7 +84,6 @@ jobs:
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
       - name: Get Binder URL from config file
-        id: get-binder-url
         shell: python
         run: |
           import yaml, os
@@ -98,23 +93,19 @@ jobs:
           outfile = open("binder_url", "w")
           outfile.write(binder_url)
           outfile.close()
-        # run: |
-        #   cat <<EOT >> get_binder_url.py
-        #   import yaml, os
-        #   with open('_config.yml') as fh:
-        #       dictionary_data = yaml.safe_load(fh)
-        #   binder_url = dictionary_data['sphinx']['config']['html_theme_options']['launch_buttons']['binderhub_url']
-        #   print(binder_url)
-        #   EOT
-        #   echo "This is the python code"
-        #   cat binder_url.py
-        #   echo "Now we're going to run the code!"
-        #   python get_binder_url.py | ( read URL; echo "{binder_url}={$URL}" ) 
-        #   echo "Now we're going to run it again but store the results in GITHUB_OUTPUT"
-        #   python get_binder_url.py | ( read URL; echo "{binder_url}={$URL}" ) >> $GITHUB_OUTPUT
-        #   echo "The contents of the GITHBUB_OUTPUT is:"
-        #   echo $GITHUB_OUTPUT
-        # # This looks convoluted but should work for setting step output...
+
+      - name: Get paths to notebook files
+        # This will find ALL *.ipynb files in the repo
+        #  It would be better to cross-check this against the _toc.yml file
+        #  to avoid unneccesary execution of notebooks that aren't included in the book
+        shell: python
+        run: |
+          import glob
+          notebooks = glob.glob('**/*.ipynb', recursive=True)
+          outfile = open("notebook_paths", "w")
+          for path in notebooks:
+              outfile.write(path + ' ')
+          outfile.close()
 
       - name: Execute notebooks via binderbot 
         env:
@@ -124,7 +115,10 @@ jobs:
           URL=$(cat binder_url)
           echo "Retrieved the binder URL:"
           echo $URL
-          python -m binderbot.cli --binder-url $URL --repo ${{ inputs.binder_build_env_repo }} --ref main ${{ inputs.binder_notebooks_to_build }}
+          NOTEBOOKS=$(cat notebook_paths)
+          echo "Retrieved the notebook paths:"
+          echo $NOTEBOOKS
+          python -m binderbot.cli --binder-url $URL --repo ${{ inputs.binder_build_env_repo }} --ref main $NOTEBOOKS
       
       - name: Build the book
         run: |
