@@ -60,7 +60,7 @@ jobs:
         shell: python
         run: |
           import yaml
-          with open('_config.yml') as fh:
+          with open('${{ inputs.path_to_source }}/_config.yml') as fh:
               dictionary_data = yaml.safe_load(fh)
           execute_notebooks = dictionary_data['execute']['execute_notebooks']
           outfile = open("execute_notebooks", "w")
@@ -122,7 +122,7 @@ jobs:
         shell: python
         run: |
           import yaml, os
-          with open('_config.yml') as fh:
+          with open('${{ inputs.path_to_source }}/_config.yml') as fh:
               dictionary_data = yaml.safe_load(fh)
           binder_url = dictionary_data['sphinx']['config']['html_theme_options']['launch_buttons']['binderhub_url']
           outfile = open("binder_url", "w")
@@ -159,6 +159,19 @@ jobs:
         # this currently hard-codes the 'main' branch
         #  what should be our approach to the use case where the PR introduces changes to the environment.yml file
         #  and thus requires building a new image on the binder?
+
+      - name: Disable notebook execution during jupyterbook build
+        if: |
+          steps.set_execute_flag.outputs.execute_notebooks == 'binder'
+        shell: python
+        run: |
+          import yaml
+          with open('${{ inputs.path_to_source }}/_config.yml') as f:
+            data = yaml.safe_load(f)
+          data['execute']['execute_notebooks'] = 'off'
+          with open('${{ inputs.path_to_source }}/_config.yml', 'w') as f:
+            yaml.dump(data, f)
+
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         run: |
