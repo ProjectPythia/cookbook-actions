@@ -71,6 +71,7 @@ jobs:
         id: set_execute_flag
         run: |
           echo "execute_notebooks=$(cat execute_notebooks)" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
 
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
@@ -83,7 +84,7 @@ jobs:
       - name: Create book build environment
         if: steps.set_execute_flag.outputs.execute_notebooks == 'binder'
         run: |
-          mamba install jupyterbook pip
+          mamba install -c conda-forge jupyterbook pip
           pip install sphinx-pythia-theme
           pip install git+https://github.com/pangeo-gallery/binderbot.git
 
