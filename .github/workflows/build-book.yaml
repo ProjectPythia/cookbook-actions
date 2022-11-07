@@ -23,11 +23,6 @@ on:
         required: false
         default: 'true'
         type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
-      # use_binder:
-      #   description: 'Flag for whether we should execute notebooks via binderbot'
-      #   required: false
-      #   default: 'true'
-      #   type: string
       binder_build_env_repo:  # this should just default to the current repo. 
         description: 'Repository where the execution environment for the Binder is defined'
         required: false
@@ -89,24 +84,23 @@ jobs:
           inputs.use_cached_environment == 'true'
         with:
           path: /usr/share/miniconda3/envs/${{ inputs.environment_name }}
-          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-config.yml-[HASH]-DATE'
+          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-_config.yml-[HASH]-DATE'
           # Logic inspired by https://dev.to/epassaro/caching-anaconda-environments-on-github-actions-2d08
           key: ${{ format('linux-64-conda-{0}-{1}-{2}-{3}-{4}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), '_config.yml', hashFiles(format('{0}', '_config.yml')), env.DATE )}}
         id: cache
 
-      # - name: Get book-build-environment.yml
-      #   if: steps.parse_config.outputs.execute_notebooks == 'binder'
-      #   uses: actions/checkout@v3
-      #   with:
-      #     # repository: ProjectPythiaCookbooks/cookbook-actions
-      #     repository: brian-rose/cookbook-actions
-      #     ref: binderbot-switch # get rid of this after merge
-      #     path: cookbook-actions
+      - name: Get book-build-environment.yml
+        if: |
+          (inputs.use_cached_environment != 'true'
+          || steps.cache.outputs.cache-hit != 'true')
+          && steps.parse_config.outputs.execute_notebooks == 'binder'
+        uses: actions/checkout@v3
+        with:
+          # repository: ProjectPythiaCookbooks/cookbook-actions
+          repository: brian-rose/cookbook-actions
+          ref: binderbot-switch # get rid of this after merge
+          path: cookbook-actions
       
-      # - name: Create book build environment
-      #   if: steps.parse_config.outputs.execute_notebooks == 'binder'
-      #   run: mamba env update -n ${{ inputs.environment_name }} -f cookbook-actions/book-build-environment.yml
-
       - name: Create book build environment
         if: |
           (inputs.use_cached_environment != 'true'
