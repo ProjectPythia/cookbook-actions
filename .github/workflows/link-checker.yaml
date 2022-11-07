@@ -13,7 +13,7 @@ on:
         required: false
         default: 'environment.yml'
         type: string
-      path_to_source:
+      path_to_notebooks:
         description: 'Location of the JupyterBook source relative to repo root'
         required: false
         default: './'
@@ -70,12 +70,12 @@ jobs:
         shell: python
         run: |
           import yaml
-          with open('${{ inputs.path_to_source }}/_config.yml') as f:
+          with open('${{ inputs.path_to_notebooks }}/_config.yml') as f:
             data = yaml.safe_load(f)
           data['execute']['execute_notebooks'] = 'off'
-          with open('${{ inputs.path_to_source }}/_config.yml', 'w') as f:
+          with open('${{ inputs.path_to_notebooks }}/_config.yml', 'w') as f:
             yaml.dump(data, f)
 
       - name: Check external links
         run: |
-          jupyter-book build --builder linkcheck ${{ inputs.path_to_source }}
+          jupyter-book build --builder linkcheck ${{ inputs.path_to_notebooks }}
