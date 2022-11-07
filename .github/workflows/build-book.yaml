@@ -23,6 +23,11 @@ on:
         required: false
         default: 'true'
         type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
+      binder_build_env_repo:  # this should just default to the current repo. 
+        description: 'Repository where the execution environment for the Binder is defined'
+        required: false
+        default: ${{ github.repository }}
+        type: string
       artifact_name:
         description: 'The name to assign to the built book artifact.'
         required: false
@@ -46,39 +51,106 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Parse config file
+        id: parse_config
+        uses: CumulusDS/get-yaml-paths-action@v0.1.0
+        with:
+          file: ${{ inputs.path_to_notebooks }}/_config.yml
+          execute_notebooks: execute.execute_notebooks
+          binderhub_url: sphinx.config.html_theme_options.launch_buttons.binderhub_url
+
+      - name: Echo values from config file
+        run: |
+          echo ${{ steps.parse_config.outputs.execute_notebooks }}
+          echo ${{ steps.parse_config.outputs.binderhub_url }}
+
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-variant: Mambaforge
           miniforge-version: latest
+          python-version: "3.10"  # binderbot is failing with python 3.11
           activate-environment: ${{ inputs.environment_name }}
           use-mamba: true
 
       - name: Set cache date
-        if: ${{ inputs.use_cached_environment == 'true' }}
+        if: inputs.use_cached_environment == 'true'
         run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
       - uses: actions/cache@v3
         if: inputs.use_cached_environment == 'true'
         with:
           path: /usr/share/miniconda3/envs/${{ inputs.environment_name }}
-          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-DATE'
+          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-_config.yml-[HASH]-DATE'
           # Logic inspired by https://dev.to/epassaro/caching-anaconda-environments-on-github-actions-2d08
-          key: ${{ format('linux-64-conda-{0}-{1}-{2}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), env.DATE )}}
+          key: ${{ format('linux-64-conda-{0}-{1}-{2}-{3}-{4}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), '_config.yml', hashFiles(format('{0}', '_config.yml')), env.DATE )}}
         id: cache
-
-      - name: Update environment
+      
+      - name: Create book build environment
         if: |
-          inputs.use_cached_environment != 'true'
-          || steps.cache.outputs.cache-hit != 'true'
+          (inputs.use_cached_environment != 'true'
+          || steps.cache.outputs.cache-hit != 'true')
+          && steps.parse_config.outputs.execute_notebooks == 'binder'
+        run: |
+          mamba install -c conda-forge jupyter-book pip
+          pip install sphinx-pythia-theme
+          pip install git+https://github.com/pangeo-gallery/binderbot.git
+
+      - name: Update execution environment
+        if: |
+          (inputs.use_cached_environment != 'true'
+          || steps.cache.outputs.cache-hit != 'true')
+          && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
-      - name: Build the book
+      - name: Get paths to notebook files
+        if: |
+          steps.parse_config.outputs.execute_notebooks == 'binder'
+        # This will find ALL *.ipynb files in the repo
+        #  It would be better to cross-check this against the _toc.yml file
+        #  to avoid unneccesary execution of notebooks that aren't included in the book
+        shell: python
+        run: |
+          import glob
+          notebooks = glob.glob('**/*.ipynb', recursive=True)
+          outfile = open("notebook_paths", "w")
+          for path in notebooks:
+              outfile.write(path + ' ')
+          outfile.close()
+         # Writing these out to a file because I can't figure out how to set an environment variable from a python script 
+
+      - name: Execute notebooks via binderbot
+        if: |
+          steps.parse_config.outputs.execute_notebooks == 'binder'
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
         run: |
+          NOTEBOOKS=$(cat notebook_paths)
+          echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
+          echo "We will now execute these notebooks: $NOTEBOOKS"
+          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ inputs.binder_build_env_repo }} --ref main $NOTEBOOKS
+        # this currently hard-codes the 'main' branch
+        #  what should be our approach to the use case where the PR introduces changes to the environment.yml file
+        #  and thus requires building a new image on the binder?
+
+      - name: Disable notebook execution during jupyterbook build
+        if: |
+          steps.parse_config.outputs.execute_notebooks == 'binder'
+        shell: python
+        run: |
+          import yaml
+          with open('${{ inputs.path_to_notebooks }}/_config.yml') as f:
+            data = yaml.safe_load(f)
+          data['execute']['execute_notebooks'] = 'off'
+          with open('${{ inputs.path_to_notebooks }}/_config.yml', 'w') as f:
+            yaml.dump(data, f)
+
+      - name: Build the book
+        # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
+        run: |
           jupyter-book build ${{ inputs.path_to_notebooks }}
+
       - name: Zip the book
         run: |
           set -x
@@ -87,6 +159,7 @@ jobs:
               rm -rf book.zip
           fi
           zip -r book.zip ${{ inputs.path_to_notebooks }}/_build/html
+
       - name: Upload zipped book artifact
         uses: actions/upload-artifact@v3
         with:

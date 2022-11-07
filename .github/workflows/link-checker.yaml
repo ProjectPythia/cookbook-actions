@@ -24,6 +24,10 @@ on:
         default: 'true'
         type: string
 
+concurrency:
+  group: ${{ github.workflow }}=${{ github.head_ref}}
+  cancel-in-progress: true
+
 jobs:
   link-checker:
     runs-on: ubuntu-latest
@@ -31,10 +35,6 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ github.token }}
       - uses: actions/checkout@v3
 
       - name: Setup Mambaforge
@@ -46,16 +46,18 @@ jobs:
           use-mamba: true
 
       - name: Set cache date
-        if: inputs.use_cached_environment == 'true'
+        if: |
+          inputs.use_cached_environment == 'true'
         run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
       - uses: actions/cache@v3
-        if: inputs.use_cached_environment == 'true'
+        if: |
+          inputs.use_cached_environment == 'true'
         with:
           path: /usr/share/miniconda3/envs/${{ inputs.environment_name }}
-          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-DATE'
+          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-_config.yml-[HASH]-DATE'
           # Logic inspired by https://dev.to/epassaro/caching-anaconda-environments-on-github-actions-2d08
-          key: ${{ format('linux-64-conda-{0}-{1}-{2}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), env.DATE )}}
+          key: ${{ format('linux-64-conda-{0}-{1}-{2}-{3}-{4}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), '_config.yml', hashFiles(format('{0}', '_config.yml')), env.DATE )}}
         id: cache
 
       - name: Update environment
@@ -73,6 +75,7 @@ jobs:
           data['execute']['execute_notebooks'] = 'off'
           with open('${{ inputs.path_to_notebooks }}/_config.yml', 'w') as f:
             yaml.dump(data, f)
+
       - name: Check external links
         run: |
           jupyter-book build --builder linkcheck ${{ inputs.path_to_notebooks }}
