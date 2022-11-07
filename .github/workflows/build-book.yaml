@@ -58,7 +58,7 @@ jobs:
 
       - name: Get execute_notebooks field from config file
         id: set_execute_flag
-        uses: jbutcher5/read-yaml@v1
+        uses: jbutcher5/read-yaml@1.6
         with:
           file: ${{ inputs.path_to_source }}/_config.yml
           key-path: '["execute", "execute_notebooks"]'
