@@ -56,13 +56,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Get execute_notebooks field from config file
-        id: set_execute_flag
-        uses: jbutcher5/read-yaml@1.6
-        with:
-          file: ${{ inputs.path_to_source }}/_config.yml
-          key-path: '["execute", "execute_notebooks"]'
-
       - name: Parse config file
         id: parse_config
         uses: CumulusDS/get-yaml-paths-action@v0.1.0
@@ -70,26 +63,6 @@ jobs:
           file: ${{ inputs.path_to_source }}/_config.yml
           execute_notebooks: execute.execute_notebooks
           binderhub_url: sphinx.config.html_theme_options.launch_buttons.binderhub_url
-
-      # - name: Get execute_notebooks field from config file
-      #   shell: python
-      #   run: |
-      #     import yaml
-      #     with open('${{ inputs.path_to_source }}/_config.yml') as fh:
-      #         dictionary_data = yaml.safe_load(fh)
-      #     execute_notebooks = dictionary_data['execute']['execute_notebooks']
-      #     outfile = open("execute_notebooks", "w")
-      #     outfile.write(execute_notebooks)
-      #     outfile.close()
-
-      # - name: Set execute flag
-      #   id: set_execute_flag
-      #   run: |
-      #     echo "execute_notebooks=$(cat execute_notebooks)" >> $GITHUB_OUTPUT
-      #     cat $GITHUB_OUTPUT
-
-      # - name: Echo current value of execute_notebook
-      #   run: echo ${{ steps.set_execute_flag.outputs.data }}
 
       - name: Echo values from config file
         run: |
@@ -101,16 +74,9 @@ jobs:
         with:
           miniforge-variant: Mambaforge
           miniforge-version: latest
-          python-version: "3.10"
+          python-version: "3.10"  # binderbot is failing with python 3.11
           activate-environment: ${{ inputs.environment_name }}
           use-mamba: true
-
-      - name: Create book build environment
-        if: steps.parse_config.outputs.execute_notebooks == 'binder'
-        run: |
-          mamba install -c conda-forge jupyter-book pip
-          pip install sphinx-pythia-theme
-          pip install git+https://github.com/pangeo-gallery/binderbot.git
 
       - name: Set cache date
         if: |
@@ -121,33 +87,42 @@ jobs:
       - uses: actions/cache@v3
         if: |
           inputs.use_cached_environment == 'true'
-          && steps.parse_config.outputs.execute_notebooks != 'binder'
         with:
           path: /usr/share/miniconda3/envs/${{ inputs.environment_name }}
-          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-DATE'
+          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-config.yml-[HASH]-DATE'
           # Logic inspired by https://dev.to/epassaro/caching-anaconda-environments-on-github-actions-2d08
-          key: ${{ format('linux-64-conda-{0}-{1}-{2}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), env.DATE )}}
+          key: ${{ format('linux-64-conda-{0}-{1}-{2}-{3}-{4}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), _config.yml, hashFiles(format('{0}', _config.yml)), env.DATE )}}
         id: cache
 
-      - name: Update environment
+      # - name: Get book-build-environment.yml
+      #   if: steps.parse_config.outputs.execute_notebooks == 'binder'
+      #   uses: actions/checkout@v3
+      #   with:
+      #     # repository: ProjectPythiaCookbooks/cookbook-actions
+      #     repository: brian-rose/cookbook-actions
+      #     ref: binderbot-switch # get rid of this after merge
+      #     path: cookbook-actions
+      
+      # - name: Create book build environment
+      #   if: steps.parse_config.outputs.execute_notebooks == 'binder'
+      #   run: mamba env update -n ${{ inputs.environment_name }} -f cookbook-actions/book-build-environment.yml
+
+      - name: Create book build environment
+        if: |
+          (inputs.use_cached_environment != 'true'
+          || steps.cache.outputs.cache-hit != 'true')
+          && steps.parse_config.outputs.execute_notebooks == 'binder'
+        run: |
+          mamba install -c conda-forge jupyter-book pip
+          pip install sphinx-pythia-theme
+          pip install git+https://github.com/pangeo-gallery/binderbot.git
+
+      - name: Update execution environment
         if: |
           (inputs.use_cached_environment != 'true'
           || steps.cache.outputs.cache-hit != 'true')
           && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
-
-      # - name: Get Binder URL from config file
-      #   if: |
-      #     steps.parse_config.outputs.execute_notebooks == 'binder'
-      #   shell: python
-      #   run: |
-      #     import yaml, os
-      #     with open('${{ inputs.path_to_source }}/_config.yml') as fh:
-      #         dictionary_data = yaml.safe_load(fh)
-      #     binder_url = dictionary_data['sphinx']['config']['html_theme_options']['launch_buttons']['binderhub_url']
-      #     outfile = open("binder_url", "w")
-      #     outfile.write(binder_url)
-      #     outfile.close()
 
       - name: Get paths to notebook files
         if: |
@@ -163,6 +138,7 @@ jobs:
           for path in notebooks:
               outfile.write(path + ' ')
           outfile.close()
+         # Writing these out to a file because I can't figure out how to set an environment variable from a python script 
 
       - name: Execute notebooks via binderbot
         if: |
@@ -173,7 +149,7 @@ jobs:
         run: |
           NOTEBOOKS=$(cat notebook_paths)
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
-          echo 'We will now execute these notebooks: $NOTEBOOKS'
+          echo "We will now execute these notebooks: $NOTEBOOKS"
           python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ inputs.binder_build_env_repo }} --ref main $NOTEBOOKS
         # this currently hard-codes the 'main' branch
         #  what should be our approach to the use case where the PR introduces changes to the environment.yml file
