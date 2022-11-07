@@ -74,32 +74,17 @@ jobs:
           use-mamba: true
 
       - name: Set cache date
-        if: |
-          inputs.use_cached_environment == 'true'
-          && steps.parse_config.outputs.execute_notebooks != 'binder'
+        if: inputs.use_cached_environment == 'true'
         run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
       - uses: actions/cache@v3
-        if: |
-          inputs.use_cached_environment == 'true'
+        if: inputs.use_cached_environment == 'true'
         with:
           path: /usr/share/miniconda3/envs/${{ inputs.environment_name }}
           # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-_config.yml-[HASH]-DATE'
           # Logic inspired by https://dev.to/epassaro/caching-anaconda-environments-on-github-actions-2d08
           key: ${{ format('linux-64-conda-{0}-{1}-{2}-{3}-{4}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), '_config.yml', hashFiles(format('{0}', '_config.yml')), env.DATE )}}
         id: cache
-
-      - name: Get book-build-environment.yml
-        if: |
-          (inputs.use_cached_environment != 'true'
-          || steps.cache.outputs.cache-hit != 'true')
-          && steps.parse_config.outputs.execute_notebooks == 'binder'
-        uses: actions/checkout@v3
-        with:
-          # repository: ProjectPythiaCookbooks/cookbook-actions
-          repository: brian-rose/cookbook-actions
-          ref: binderbot-switch # get rid of this after merge
-          path: cookbook-actions
       
       - name: Create book build environment
         if: |
