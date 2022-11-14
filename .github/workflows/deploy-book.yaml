@@ -18,6 +18,11 @@ on:
         required: false
         default: 'false'
         type: string
+      cname:
+        description: 'Custom domain name'
+        required: false
+        default: 'None'  # This is just a flag for whether to ignore this input
+        type: string
       
 jobs:
   deploy:
@@ -51,10 +56,25 @@ jobs:
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3.9.0
-        if: github.ref == 'refs/heads/main'
+        if: |
+          (github.ref == 'refs/heads/main'
+          && inputs.cname == 'None')
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _build/html
           enable_jekyll: false
           keep_files: true  # This preserves existing previews from open PRs
           destination_dir: ${{ inputs.destination_dir }}
+
+      - name: Deploy to GitHub Pages with custom domain
+        uses: peaceiris/actions-gh-pages@v3.9.0
+        if: |
+          (github.ref == 'refs/heads/main'
+          && inputs.cname != 'None')
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _build/html
+          enable_jekyll: false
+          keep_files: true  # This preserves existing previews from open PRs
+          destination_dir: ${{ inputs.destination_dir }}
+          cname: ${{ inputs.cname }}
