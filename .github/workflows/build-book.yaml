@@ -33,6 +33,11 @@ on:
         required: false
         default: 'book-zip'
         type: string
+      build_command:
+        description: 'The linux command to build the book or site.'
+        required: false
+        default: 'jupyter-book build ${{ inputs.path_to_notebooks }}'
+        type: string
 
     secrets:
       ARM_USERNAME:
@@ -51,8 +56,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Check for config file
+        id: check_config
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "${{ inputs.path_to_notebooks }}/_config.yml"
+      
       - name: Parse config file
         id: parse_config
+        if: steps.check_config.outputs.files_exists == 'true'
         uses: CumulusDS/get-yaml-paths-action@v1.0.1
         with:
           file: ${{ inputs.path_to_notebooks }}/_config.yml
@@ -60,6 +72,7 @@ jobs:
           binderhub_url: sphinx.config.html_theme_options.launch_buttons.binderhub_url
 
       - name: Echo values from config file
+        if: steps.check_config.outputs.files_exists == 'true'
         run: |
           echo ${{ steps.parse_config.outputs.execute_notebooks }}
           echo ${{ steps.parse_config.outputs.binderhub_url }}
@@ -149,7 +162,7 @@ jobs:
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         run: |
-          jupyter-book build ${{ inputs.path_to_notebooks }}
+          ${{ inputs.build_command }}
 
       - name: Zip the book
         run: |
