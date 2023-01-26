@@ -36,7 +36,7 @@ on:
       build_command:
         description: 'The linux command to build the book or site.'
         required: false
-        default: 'jupyter-book build ${{ inputs.path_to_notebooks }}'
+        default: 'jupyter-book build .'
         type: string
 
     secrets:
@@ -162,6 +162,7 @@ jobs:
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         run: |
+          cd ${{ inputs.path_to_notebooks }}
           ${{ inputs.build_command }}
 
       - name: Zip the book
