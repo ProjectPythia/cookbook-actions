@@ -23,6 +23,12 @@ on:
         required: false
         default: 'true'
         type: string
+      build_command:
+        description: 'The linux command to run the link checker for the book or site'
+        required: false
+        default: 'jupyter-book build --builder linkcheck .'
+        type: string
+
 
 concurrency:
   group: ${{ github.workflow }}=${{ github.head_ref}}
@@ -59,4 +65,5 @@ jobs:
 
       - name: Check external links
         run: |
-          jupyter-book build --builder linkcheck ${{ inputs.path_to_notebooks }}
+          cd ${{ inputs.path_to_notebooks }}
+          ${{ inputs.build_command }}
