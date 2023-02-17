@@ -113,7 +113,7 @@ jobs:
         if: |
           (inputs.use_cached_environment != 'true'
           || steps.cache.outputs.cache-hit != 'true')
-          && steps.parse_config.outputs.execute_notebooks != 'binder'
+          && steps.parse_config.outputs.execute_notebooks == 'binder'
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
       - name: Get paths to notebook files
