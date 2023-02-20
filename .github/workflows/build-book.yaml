@@ -79,8 +79,9 @@ jobs:
           files: ${{ inputs.environment_file }}
 
       - name: Echo environment change test result
-        echo '(DEBUG) The value of steps.env_change.any_changed is:'
-        echo ${{ steps.env_change.any_changed }}
+        run: |
+          echo '(DEBUG) The value of steps.env_change.any_changed is:'
+          echo ${{ steps.env_change.any_changed }}
 
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
