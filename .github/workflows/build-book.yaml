@@ -148,10 +148,10 @@ jobs:
           echo "using the existing binder image from the main branch"
           python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref main $NOTEBOOKS
 
-    - name: Execute notebooks via binderbot using new image with latest environment
-      if: |
-          ( steps.parse_config.outputs.execute_notebooks == 'binder'
-          && steps.env_change.any_changed == 'true' )
+      - name: Execute notebooks via binderbot using new image with latest environment
+        if: |
+            ( steps.parse_config.outputs.execute_notebooks == 'binder'
+            && steps.env_change.any_changed == 'true' )
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
@@ -161,6 +161,7 @@ jobs:
           echo "We will now execute these notebooks: $NOTEBOOKS"
           echo "using the updated environment file in this branch to build a new image"
           python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref ${{ github.ref }} $NOTEBOOKS
+
       - name: Disable notebook execution during jupyterbook build
         if: |
           steps.parse_config.outputs.execute_notebooks == 'binder'
