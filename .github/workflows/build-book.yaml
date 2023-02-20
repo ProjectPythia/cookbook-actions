@@ -22,12 +22,7 @@ on:
         description: 'Flag for whether we should attempt to retrieve a previously cached environment.'
         required: false
         default: 'true'
-        type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
-      binder_build_env_repo:  # this should just default to the current repo. 
-        description: 'Repository where the execution environment for the Binder is defined'
-        required: false
-        default: ${{ github.repository }}
-        type: string
+        type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483${{ github.repository }}
       artifact_name:
         description: 'The name to assign to the built book artifact.'
         required: false
@@ -83,12 +78,6 @@ jobs:
         with:
           files: ${{ inputs.environment_file }}
 
-      - name: List all changed files
-        run: |
-          for file in ${{ steps.env_change.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
-
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -124,7 +113,8 @@ jobs:
       - name: Update execution environment
         if: |
           (inputs.use_cached_environment != 'true'
-          || steps.cache.outputs.cache-hit != 'true')
+          || steps.cache.outputs.cache-hit != 'true'
+          || steps.env_change.any_changed == 'true')
           && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
@@ -144,9 +134,10 @@ jobs:
           outfile.close()
          # Writing these out to a file because I can't figure out how to set an environment variable from a python script 
 
-      - name: Execute notebooks via binderbot
+      - name: Execute notebooks via binderbot using existing image
         if: |
-          steps.parse_config.outputs.execute_notebooks == 'binder'
+          ( steps.parse_config.outputs.execute_notebooks == 'binder'
+          && steps.env_change.any_changed != 'true' )
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
@@ -154,10 +145,22 @@ jobs:
           NOTEBOOKS=$(cat notebook_paths)
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
           echo "We will now execute these notebooks: $NOTEBOOKS"
-          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ inputs.binder_build_env_repo }} --ref main $NOTEBOOKS
-        # this currently hard-codes the 'main' branch
-        #  what should be our approach to the use case where the PR introduces changes to the environment.yml file
-        #  and thus requires building a new image on the binder?
+          echo "using the existing binder image from the main branch"
+          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref main $NOTEBOOKS
+
+      - name: Execute notebooks via binderbot using new image with latest environment
+        if: |
+            ( steps.parse_config.outputs.execute_notebooks == 'binder'
+            && steps.env_change.any_changed == 'true' )
+        env:
+          ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
+          ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+        run: |
+          NOTEBOOKS=$(cat notebook_paths)
+          echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
+          echo "We will now execute these notebooks: $NOTEBOOKS"
+          echo "using the updated environment file in this branch to build a new image"
+          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref ${{ github.ref }} $NOTEBOOKS
 
       - name: Disable notebook execution during jupyterbook build
         if: |
