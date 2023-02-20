@@ -77,6 +77,18 @@ jobs:
           echo ${{ steps.parse_config.outputs.execute_notebooks }}
           echo ${{ steps.parse_config.outputs.binderhub_url }}
 
+      - name: Test for environment change
+        id: env_change
+        uses: tj-actions/changed-files@v35
+        with:
+          files: ${{ inputs.environment_file }}
+
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.env_change.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -113,7 +125,7 @@ jobs:
         if: |
           (inputs.use_cached_environment != 'true'
           || steps.cache.outputs.cache-hit != 'true')
-          && steps.parse_config.outputs.execute_notebooks == 'binder'
+          && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
 
       - name: Get paths to notebook files
