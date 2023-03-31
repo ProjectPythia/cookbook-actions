@@ -23,6 +23,11 @@ on:
         required: false
         default: 'None'  # This is just a flag for whether to ignore this input
         type: string
+      publish_dir:
+        description: 'Publish dir for the peaceiris/actions-gh-pages action'
+        required: false
+        default: '_build/html'
+        type: string
       
 jobs:
   deploy:
@@ -61,7 +66,7 @@ jobs:
           && inputs.cname == 'None')
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/html
+          publish_dir: {{ inputs.publish_dir }}
           enable_jekyll: false
           keep_files: true  # This preserves existing previews from open PRs
           destination_dir: ${{ inputs.destination_dir }}
@@ -73,7 +78,7 @@ jobs:
           && inputs.cname != 'None')
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/html
+          publish_dir: {{ inputs.publish_dir }}
           enable_jekyll: false
           keep_files: true  # This preserves existing previews from open PRs
           destination_dir: ${{ inputs.destination_dir }}
