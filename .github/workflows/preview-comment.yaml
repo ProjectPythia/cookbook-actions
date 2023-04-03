@@ -15,6 +15,7 @@ on:
         description: 'Name of the website in comment'
         required: false
         default: "The Cookbook"
+        type: string
 
 jobs:
   comment:
