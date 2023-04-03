@@ -11,6 +11,11 @@ on:
         description: 'SHA of the commit associated with this Pull Request'
         required: true
         type: string
+      site_name: 
+        description: 'Name of the website in comment'
+        required: false
+        default: "The Cookbook"
+        type: string
 
 jobs:
   comment:
@@ -26,7 +31,7 @@ jobs:
 
       - name: Set message value
         run: |
-          echo "comment_message=👋 Thanks for opening this PR! The Cookbook will be automatically built with [GitHub Actions](https://github.com/features/actions). To see the status of your deployment, click below." >> $GITHUB_ENV
+          echo "comment_message=👋 Thanks for opening this PR! ${{ inputs.site_name }} will be automatically built with [GitHub Actions](https://github.com/features/actions). To see the status of your deployment, click below." >> $GITHUB_ENV
 
       - name: Find preview comment
         uses: peter-evans/find-comment@v2
