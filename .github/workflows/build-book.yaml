@@ -137,7 +137,7 @@ jobs:
           for path in notebooks:
               outfile.write(path + ' ')
           outfile.close()
-         # Writing these out to a file because I can't figure out how to set an environment variable from a python script 
+        # Writing these out to a file because I can't figure out how to set an environment variable from a python script 
       - name: Execute notebooks via binderbot using existing image
         if: |
           ( steps.parse_config.outputs.execute_notebooks == 'binder'
