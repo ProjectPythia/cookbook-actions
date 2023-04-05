@@ -146,13 +146,15 @@ jobs:
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          SECRETS_VARS: ${{ toJson(secrets) }}
         run: |
           NOTEBOOKS=$(cat notebook_paths)
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
           echo "We will now execute these notebooks: $NOTEBOOKS"
           echo "using the existing binder image from the main branch"
-          SECRET_VARS=$(cat test.json | jq -r 'with_entries(.key |= "--pass-env-var " + . + " ") | keys | [ .[] | tostring ] | @csv')
-          SECRET_VARS_ARGS=$(echo "${SECRET_VARS//,}" | tr -d '"')
+          SECRET_VAR_LIST=$(echo $SECRET_VARS | jq -r 'with_entries(.key |= "--pass-env-var " + . + " ") | keys | [ .[] | tostring ] | @csv')
+          SECRET_VARS_ARGS=$(echo "${SECRET_VAR_LIST//,}" | tr -d '"')
+        # The last two lines converted the json form of the secrets' keys to a list, and coverted these to command line arguments
           python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref main $NOTEBOOKS $SECRET_VARS_ARGS
 
       - name: Execute notebooks via binderbot using new image with latest environment
