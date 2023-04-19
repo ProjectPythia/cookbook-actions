@@ -27,17 +27,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Fetch Repo Name
         id: repo-name
-        run: echo "::set-output name=value::$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')"  # just the repo name, not owner
-
-      - name: Set preview URL
-        id: preview-url
-        run: |
-          if [[ ${{ steps.repo-name.outputs.value }} = ${{ github.repository_owner }}.github.io ]]
-          then
-            echo "url=https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}" >> $GITHUB_OUTPUT
-          else
-            echo "url=https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}"
-          fi
+        run: echo "value=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_OUTPUT  # just the repo name, not owner
 
       - name: Set message value
         run: |
@@ -75,6 +65,21 @@ jobs:
             ${{ env.comment_message }}
             🔍 Git commit SHA: ${{ inputs.sha }}
             ✅ Deployment Preview URL: In Progress
+
+      - name: Set preview URL
+        if: |
+          github.event.workflow_run.conclusion == 'success'
+          && steps.fc.outputs.comment-id != ''
+        id: preview-url
+        run: |
+          shopt -s nocasematch
+          if [[ ${{ steps.repo-name.outputs.value }} = ${{ github.repository_owner }}.github.io ]]
+          then
+            echo "url=https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}" >> $GITHUB_OUTPUT
+          fi
+          shopt -u nocasematch
 
       - name: Finalize preview comment
         if: |
