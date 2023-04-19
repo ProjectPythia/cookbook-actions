@@ -32,11 +32,11 @@ jobs:
       - name: Set preview URL
         id: preview-url
         run: |
-          if [${{ steps.repo-name.outputs.value }} = ${{ github.repository_owner }}.github.io]
+          if [[ ${{ steps.repo-name.outputs.value }} = ${{ github.repository_owner }}.github.io ]]
           then
-            echo "::set-output name=value::$(echo 'https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}')"
+            echo "url=https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=value::$(echo 'https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}')"
+            echo "url=https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}"
           fi
 
       - name: Set message value
@@ -87,4 +87,4 @@ jobs:
           body: |
             ${{ env.comment_message }}
             🔍 Git commit SHA: ${{ inputs.sha }}
-            ✅ Deployment Preview URL: ${{ steps.preview-url.outputs.value }}
+            ✅ Deployment Preview URL: ${{ steps.preview-url.outputs.url }}
