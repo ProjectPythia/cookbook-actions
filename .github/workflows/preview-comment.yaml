@@ -33,6 +33,15 @@ jobs:
         run: |
           echo "comment_message=👋 Thanks for opening this PR! ${{ inputs.site_name }} will be automatically built with [GitHub Actions](https://github.com/features/actions). To see the status of your deployment, click below." >> $GITHUB_ENV
 
+      - name: Set preview URL
+        run: |
+          if [${{ steps.repo-name.outputs.value }} = ${{ github.repository_owner }}.github.io]
+          then
+            echo "previewURL=https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}"
+          else
+            echo "previewURL=https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}"
+          fi
+
       - name: Find preview comment
         uses: peter-evans/find-comment@v2
         id: fc
@@ -77,4 +86,4 @@ jobs:
           body: |
             ${{ env.comment_message }}
             🔍 Git commit SHA: ${{ inputs.sha }}
-            ✅ Deployment Preview URL: https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}
+            ✅ Deployment Preview URL: ${{ env.previewURL }}
