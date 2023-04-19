@@ -29,18 +29,19 @@ jobs:
         id: repo-name
         run: echo "::set-output name=value::$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')"  # just the repo name, not owner
 
-      - name: Set message value
-        run: |
-          echo "comment_message=👋 Thanks for opening this PR! ${{ inputs.site_name }} will be automatically built with [GitHub Actions](https://github.com/features/actions). To see the status of your deployment, click below." >> $GITHUB_ENV
-
       - name: Set preview URL
+        id: preview-url
         run: |
           if [${{ steps.repo-name.outputs.value }} = ${{ github.repository_owner }}.github.io]
           then
-            echo "previewURL=https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}"
+            echo "::set-output name=value::$(echo 'https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}')"
           else
-            echo "previewURL=https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}"
+            echo "::set-output name=value::$(echo 'https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}')"
           fi
+
+      - name: Set message value
+        run: |
+          echo "comment_message=👋 Thanks for opening this PR! ${{ inputs.site_name }} will be automatically built with [GitHub Actions](https://github.com/features/actions). To see the status of your deployment, click below." >> $GITHUB_ENV
 
       - name: Find preview comment
         uses: peter-evans/find-comment@v2
@@ -86,4 +87,4 @@ jobs:
           body: |
             ${{ env.comment_message }}
             🔍 Git commit SHA: ${{ inputs.sha }}
-            ✅ Deployment Preview URL: ${{ env.previewURL }}
+            ✅ Deployment Preview URL: ${{ steps.preview-url.outputs.value }}
