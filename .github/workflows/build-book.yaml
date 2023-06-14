@@ -33,6 +33,11 @@ on:
         required: false
         default: 'jupyter-book build .'
         type: string
+      output_path:
+        description: 'Path to the built html content relative to `path_to_notebooks`'
+        required: false
+        default: '_build/html'
+        type: string
 
     secrets:
       ARM_USERNAME:
@@ -193,7 +198,7 @@ jobs:
           if [ -f book.zip ]; then
               rm -rf book.zip
           fi
-          zip -r book.zip ${{ inputs.path_to_notebooks }}/_build/html
+          zip -r book.zip ${{ inputs.path_to_notebooks }}/ ${{ inputs.output_path }}
 
       - name: Upload zipped book artifact
         uses: actions/upload-artifact@v3
