@@ -38,6 +38,11 @@ on:
         required: false
         default: '_build/html'
         type: string
+      binder_nb_timeout:
+        description: 'Maximum execution time (in seconds) for each notebook on the binder.'
+        required: false
+        default: 600
+        type: number
 
     secrets:
       ARM_USERNAME:
@@ -142,6 +147,7 @@ jobs:
           for path in notebooks:
               outfile.write(path + ' ')
           outfile.close() # Writing these out to a file because I can't figure out how to set an environment variable from a python script 
+
       - name: Execute notebooks via binderbot using existing image
         if: |
           ( steps.parse_config.outputs.execute_notebooks == 'binder'
@@ -157,7 +163,7 @@ jobs:
           echo "using the existing binder image from the main branch"
           SECRET_VAR_LIST=$(echo $SECRET_VARS | jq -r 'with_entries(.key |= "--pass-env-var " + . + " ") | keys | [ .[] | tostring ] | @csv') # Extract the keys of the secret environment variables, and create a list of arguments separated by commas (CSV)
           SECRET_VARS_ARGS=$(echo "${SECRET_VAR_LIST//,}" | tr -d '"') # Remove the commas and merge the list of strings into a single cohesive string to be passed to the binder cli
-          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref main $NOTEBOOKS $SECRET_VARS_ARGS
+          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref main --nb-timeout ${{ inputs.binder_nb_timeout }} $NOTEBOOKS $SECRET_VARS_ARGS
 
       - name: Execute notebooks via binderbot using new image with latest environment
         if: |
@@ -171,7 +177,7 @@ jobs:
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
           echo "We will now execute these notebooks: $NOTEBOOKS"
           echo "using the updated environment file in this branch to build a new image"
-          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref ${{ github.ref }} $NOTEBOOKS
+          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref ${{ github.ref }} --nb-timeout ${{ inputs.binder_nb_timeout }} $NOTEBOOKS
 
       - name: Disable notebook execution during jupyterbook build
         if: |
