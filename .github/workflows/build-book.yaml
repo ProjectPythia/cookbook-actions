@@ -193,6 +193,10 @@ jobs:
 
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
+        env:
+          ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
+          ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          SECRETS_VARS: ${{ toJson(secrets) }}
         run: |
           cd ${{ inputs.path_to_notebooks }}
           ${{ inputs.build_command }}
