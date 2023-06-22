@@ -38,6 +38,11 @@ on:
         required: false
         default: '_build/html'
         type: string
+      code_artifact_name:
+        description:
+        required: false
+        default: 'code-zip'
+        type: string
 
     secrets:
       ARM_USERNAME:
@@ -54,7 +59,20 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v3
+      # - uses: actions/checkout@v3
+      #  The next two steps should replicated checking out the code
+      - name: Download code artifact
+        id: get_code_artifact
+        uses: dawidd6/action-download-artifact@v2.27.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: trigger-book-build.yaml
+          run_id: ${{ github.event.workflow_run.id }}
+          name: ${{ inputs.code_artifact_name }}  
+      - name: Unzip the code
+        run: |
+          unzip pr_code.zip
+          rm -f pr_code.zip   
 
       - name: Check for config file
         id: check_config
