@@ -9,15 +9,9 @@ on:
         default: 'code-zip'
         type: string
 
-    secrets:
-      ARM_USERNAME:
-        description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
-        required: false
-      ARM_PASSWORD:
-        description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
-        required: false
-
-# instead of calling build-book directly, we will create and upload an artifact containing the source (minus .github directory)
+# instead of calling build-book directly, we will create and upload an artifact containing the source 
+# For security reasons, we strip out the .github directory
+#  So a PR cannot introduce malicious workflow code
 
 jobs:
   get-code:
