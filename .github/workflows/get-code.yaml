@@ -1,0 +1,49 @@
+name: get-code
+
+on:
+  workflow_call:
+    inputs:
+      code_artifact_name:
+        description: "Name of the code zip artifact, usually tagged with a PR number"
+        required: false
+        default: 'code-zip'
+        type: string
+
+    secrets:
+      ARM_USERNAME:
+        description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
+        required: false
+      ARM_PASSWORD:
+        description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
+        required: false
+
+# instead of calling build-book directly, we will create and upload an artifact containing the source (minus .github directory)
+
+jobs:
+  get-code:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Remove .github directory
+        id: remove_directory
+        run: |
+          rm -rf .github/
+
+      - name: Zip the code
+        run: |
+          set -x
+          set -e
+          if [ -f pr_code.zip ]; then
+              rm -rf pr_code.zip
+          fi
+          zip -r pr_code.zip .
+
+      - name: Upload zipped code artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-zip-${{ github.event.number }}
+          path: ./pr_code.zip
