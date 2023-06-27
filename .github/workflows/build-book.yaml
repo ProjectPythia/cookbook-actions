@@ -92,9 +92,6 @@ jobs:
       - name: Get GitHub environment variables
         id: get-env
         uses: FranzDiebold/github-env-vars-action@v2
-        run: |
-          echo "CI_REPOSITORY_NAME=$CI_REPOSITORY_NAME" >> $GITHUB_OUTPUT
-          echo "CI_ACTION_REF_NAME=$CI_ACTION_REF_NAME" >> $GITHUB_OUTPUT
       
       - name: Check for config file
         id: check_config
@@ -211,7 +208,7 @@ jobs:
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
           echo "We will now execute these notebooks: $NOTEBOOKS"
           echo "using the updated environment file in this branch to build a new image"
-          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.actor }}/${{ steps.get-env.outputs.CI_REPOSITORY_NAME }} --ref ${{ steps.get-env.outputs.CI_ACTION_REF_NAME }} --nb-timeout ${{ steps.parse_config.outputs.timeout }} $NOTEBOOKS --pass-env-var ARM_USERNAME --pass-env-var ARM_PASSWORD
+          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.actor }}/$CI_REPOSITORY_NAME --ref $CI_ACTION_REF_NAME --nb-timeout ${{ steps.parse_config.outputs.timeout }} $NOTEBOOKS --pass-env-var ARM_USERNAME --pass-env-var ARM_PASSWORD
 
       - name: Disable notebook execution during jupyterbook build
         if: |
