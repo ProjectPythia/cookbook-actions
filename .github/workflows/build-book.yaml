@@ -85,6 +85,10 @@ jobs:
           unzip pr_code.zip
           rm -f pr_code.zip   
 
+      - name: Fetch Repo Name
+        id: repo-name
+        run: echo "value=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_OUTPUT  # just the repo name, not owner
+
       - name: Check for config file
         id: check_config
         uses: andstor/file-existence-action@v2
@@ -186,8 +190,6 @@ jobs:
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
           echo "We will now execute these notebooks: $NOTEBOOKS"
           echo "using the existing binder image from the main branch"
-          SECRET_VAR_LIST=$(echo $SECRET_VARS | jq -r 'with_entries(.key |= "--pass-env-var " + . + " ") | keys | [ .[] | tostring ] | @csv') # Extract the keys of the secret environment variables, and create a list of arguments separated by commas (CSV)
-          SECRET_VARS_ARGS=$(echo "${SECRET_VAR_LIST//,}" | tr -d '"') # Remove the commas and merge the list of strings into a single cohesive string to be passed to the binder cli
           python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref main --nb-timeout ${{ steps.parse_config.outputs.timeout }} $NOTEBOOKS --pass-env-var ARM_USERNAME --pass-env-var ARM_PASSWORD
 
       - name: Execute notebooks via binderbot using new image with latest environment
@@ -202,7 +204,7 @@ jobs:
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
           echo "We will now execute these notebooks: $NOTEBOOKS"
           echo "using the updated environment file in this branch to build a new image"
-          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref ${{ github.ref }} --nb-timeout ${{ steps.parse_config.outputs.timeout }} $NOTEBOOKS --pass-env-var ARM_USERNAME --pass-env-var ARM_PASSWORD
+          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.actor }}/${{ steps.repo-name.outputs.value }} --ref ${{ github.ref_name }} --nb-timeout ${{ steps.parse_config.outputs.timeout }} $NOTEBOOKS --pass-env-var ARM_USERNAME --pass-env-var ARM_PASSWORD
 
       - name: Disable notebook execution during jupyterbook build
         if: |
