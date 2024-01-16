@@ -165,7 +165,9 @@ jobs:
           || steps.cache.outputs.cache-hit != 'true'
           || steps.env_change.outputs.any_changed == 'true')
           && steps.parse_config.outputs.execute_notebooks != 'binder'
-        run: mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
+        run: |
+          mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
+          mamba install -c conda-forge sphinxcontrib-applehelp=1.0.7
 
       - name: Get paths to notebook files
         if: |
