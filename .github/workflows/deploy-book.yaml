@@ -74,7 +74,7 @@ jobs:
       - name: Deploy to GitHub Pages with custom domain
         uses: peaceiris/actions-gh-pages@v3.9.3
         if: |
-          (github.ref == 'refs/heads/main'
+          (github.ref == 'refs/heads/try_updated_theme'
           && inputs.cname != 'None')
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
