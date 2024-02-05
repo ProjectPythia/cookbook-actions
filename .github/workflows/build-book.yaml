@@ -156,7 +156,7 @@ jobs:
           && steps.parse_config.outputs.execute_notebooks == 'binder'
         run: |
           mamba install -c conda-forge jupyter-book pip
-          pip install git+https://github.com/ProjectPythia/sphinx-pythia-theme.git@theme-update
+          pip install git+https://github.com/ProjectPythia/sphinx-pythia-theme.git@theme-update-more
           pip install git+https://github.com/pangeo-gallery/binderbot.git
 
       - name: Update execution environment
