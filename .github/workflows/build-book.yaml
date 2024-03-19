@@ -118,7 +118,7 @@ jobs:
 
       - name: Test for environment change
         id: env_change
-        uses: tj-actions/changed-files@v42
+        uses: tj-actions/changed-files@v43
         with:
           files: ${{ inputs.environment_file }}
 
