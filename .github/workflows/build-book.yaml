@@ -48,7 +48,7 @@ on:
         required: false
         default: 'code-zip'
         type: string
-      input_workflow:
+      trigger_workflow:
         description: 'Identify the workflow that produced the artifact'
         required: false
         default: trigger-book-build.yaml
@@ -79,7 +79,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v3.1.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: input.trigger-workflow
+          workflow: input.trigger_workflow
           run_id: ${{ github.event.workflow_run.id }}
           name: ${{ inputs.code_artifact_name }}
 
