@@ -44,7 +44,7 @@ on:
         default: 'false'
         type: string
       code_artifact_name:
-        description:
+        description: 'Name of zipped artifact passed in, instead of checking out the repository.'
         required: false
         default: 'code-zip'
         type: string
@@ -75,7 +75,6 @@ jobs:
         uses: dawidd6/action-download-artifact@v3.1.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: trigger-book-build.yaml
           run_id: ${{ github.event.workflow_run.id }}
           name: ${{ inputs.code_artifact_name }}
 
