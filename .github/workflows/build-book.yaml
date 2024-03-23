@@ -52,6 +52,7 @@ on:
         description: 'Identify the workflow that produced the artifact'
         required: false
         default: trigger-book-build.yaml
+        type: string
 
     secrets:
       ARM_USERNAME:
