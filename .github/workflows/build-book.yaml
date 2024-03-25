@@ -48,11 +48,17 @@ on:
         required: false
         default: 'code-zip'
         type: string
-      trigger_workflow:
+      workflow:
         description: 'Identify the workflow that produced the artifact'
         required: false
         default: trigger-book-build.yaml
         type: string
+      workflow_conclusion:
+        description: 'Only look for completed workflows?'
+        required: false
+        default: success
+        type: string
+
 
     secrets:
       ARM_USERNAME:
@@ -80,9 +86,10 @@ jobs:
         uses: dawidd6/action-download-artifact@v3.1.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: ${{ inputs.trigger_workflow }}
+          workflow: ${{ inputs.workflow }}
           run_id: ${{ github.event.workflow_run.id }}
           name: ${{ inputs.code_artifact_name }}
+          workflow_conclusion: ${{ inputs.workflow_conclusion }}
 
       - name: Unzip the code
         if: inputs.build_from_code_artifact == 'true'
