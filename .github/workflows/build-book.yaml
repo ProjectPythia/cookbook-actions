@@ -54,7 +54,7 @@ on:
         default: trigger-book-build.yaml
         type: string
       workflow_conclusion:
-        description: 'Only look for completed workflows?'
+        description: 'Workflow conclusion (options: "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required") or status (options: "completed", "in_progress", "queued") to search for. Use the empty string ("") to ignore status or conclusion in the search.'
         required: false
         default: success
         type: string
