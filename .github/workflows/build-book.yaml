@@ -158,6 +158,7 @@ jobs:
           mamba install -c conda-forge jupyter-book pip
           pip install sphinx-pythia-theme
           pip install git+https://github.com/pangeo-gallery/binderbot.git
+          mamba list
 
       - name: Update execution environment
         if: |
