@@ -167,7 +167,9 @@ jobs:
           || steps.env_change.outputs.any_changed == 'true')
           && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: |
+          mamba list
           mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
+          mamba list
 
       - name: Get paths to notebook files
         if: |
