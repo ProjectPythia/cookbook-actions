@@ -168,8 +168,9 @@ jobs:
           && steps.parse_config.outputs.execute_notebooks == 'binder'
         run: |
           mamba install -c conda-forge jupyter-book pip
-          pip install sphinx-pythia-theme
+          mamba install sphinx-pythia-theme
           pip install git+https://github.com/pangeo-gallery/binderbot.git
+          mamba list
 
       - name: Update execution environment
         if: |
@@ -179,6 +180,7 @@ jobs:
           && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: |
           mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
+          mamba list
 
       - name: Get paths to notebook files
         if: |
