@@ -44,10 +44,21 @@ on:
         default: 'false'
         type: string
       code_artifact_name:
-        description:
+        description: 'Name of zipped artifact passed in, instead of checking out the repository.'
         required: false
         default: 'code-zip'
         type: string
+      workflow:
+        description: 'Identify the workflow that produced the artifact'
+        required: false
+        default: trigger-book-build.yaml
+        type: string
+      workflow_conclusion:
+        description: 'Workflow conclusion (options: "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required") or status (options: "completed", "in_progress", "queued") to search for. Use the empty string ("") to ignore status or conclusion in the search.'
+        required: false
+        default: success
+        type: string
+
 
     secrets:
       ARM_USERNAME:
@@ -72,12 +83,13 @@ jobs:
       - name: Download code artifact
         id: get_code_artifact
         if: inputs.build_from_code_artifact == 'true'
-        uses: dawidd6/action-download-artifact@v3.0.0
+        uses: dawidd6/action-download-artifact@v3.1.4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: trigger-book-build.yaml
+          workflow: ${{ inputs.workflow }}
           run_id: ${{ github.event.workflow_run.id }}
           name: ${{ inputs.code_artifact_name }}
+          workflow_conclusion: ${{ inputs.workflow_conclusion }}
 
       - name: Unzip the code
         if: inputs.build_from_code_artifact == 'true'
@@ -95,7 +107,7 @@ jobs:
       
       - name: Check for config file
         id: check_config
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "${{ inputs.path_to_notebooks }}/_config.yml"
       
@@ -118,7 +130,7 @@ jobs:
 
       - name: Test for environment change
         id: env_change
-        uses: tj-actions/changed-files@v42
+        uses: tj-actions/changed-files@v43
         with:
           files: ${{ inputs.environment_file }}
 
@@ -167,7 +179,6 @@ jobs:
           || steps.env_change.outputs.any_changed == 'true')
           && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: |
-          mamba list
           mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
           mamba list
 
