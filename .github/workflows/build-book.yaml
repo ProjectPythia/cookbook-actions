@@ -262,6 +262,10 @@ jobs:
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
+          AQS_KEY: ${{ secrets.AQS_KEY }}
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
           SECRETS_VARS: ${{ toJson(secrets) }}
         run: |
           cd ${{ inputs.path_to_notebooks }}
