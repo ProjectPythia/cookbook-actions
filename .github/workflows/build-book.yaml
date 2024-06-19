@@ -67,6 +67,18 @@ on:
       ARM_PASSWORD:
         description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
         required: false
+      AQS_USERNAME:
+        description: 'Username for the AQS Data Portal'
+        required: false
+      AQS_KEY:
+        description: 'Key for the AQS Data Portal'
+        required: false
+      EARTHDATA_USERNAME:
+        description: 'NASA Earthdata API Username'
+        required: false
+      EARTHDATA_PASSWORD:
+        description: 'NASA Earthdata API Password'
+        required: false
 
 jobs:
   build:
@@ -204,6 +216,10 @@ jobs:
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
+          AQS_KEY: ${{ secrets.AQS_KEY }}
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
         run: |
           NOTEBOOKS=$(cat notebook_paths)
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
@@ -218,6 +234,10 @@ jobs:
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
+          AQS_KEY: ${{ secrets.AQS_KEY }}
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
         run: |
           NOTEBOOKS=$(cat notebook_paths)
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
