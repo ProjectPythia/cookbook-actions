@@ -67,6 +67,18 @@ on:
       ARM_PASSWORD:
         description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
         required: false
+      AQS_USERNAME:
+        description: 'Username for the AQS Data Portal'
+        required: false
+      AQS_KEY:
+        description: 'Key for the AQS Data Portal'
+        required: false
+      EARTHDATA_USERNAME:
+        description: 'NASA Earthdata API Username'
+        required: false
+      EARTHDATA_PASSWORD:
+        description: 'NASA Earthdata API Password'
+        required: false
 
 jobs:
   build:
@@ -83,7 +95,7 @@ jobs:
       - name: Download code artifact
         id: get_code_artifact
         if: inputs.build_from_code_artifact == 'true'
-        uses: dawidd6/action-download-artifact@v3.1.4
+        uses: dawidd6/action-download-artifact@v6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: ${{ inputs.workflow }}
@@ -130,7 +142,7 @@ jobs:
 
       - name: Test for environment change
         id: env_change
-        uses: tj-actions/changed-files@v43
+        uses: tj-actions/changed-files@v45
         with:
           files: ${{ inputs.environment_file }}
 
@@ -139,14 +151,12 @@ jobs:
           echo '(DEBUG) The value of steps.env_change.outputs.any_changed is:'
           echo ${{ steps.env_change.outputs.any_changed }}
 
-      - name: Setup Mambaforge
+      - name: Setup Miniforge
         uses: conda-incubator/setup-miniconda@v3
         with:
-          miniforge-variant: Mambaforge
           miniforge-version: latest
           python-version: "3.10"  # binderbot is failing with python 3.11
           activate-environment: ${{ inputs.environment_name }}
-          use-mamba: true
 
       - name: Set cache date
         if: inputs.use_cached_environment == 'true'
@@ -167,9 +177,10 @@ jobs:
           || steps.cache.outputs.cache-hit != 'true')
           && steps.parse_config.outputs.execute_notebooks == 'binder'
         run: |
-          mamba install -c conda-forge jupyter-book pip
-          pip install sphinx-pythia-theme
+          conda install -c conda-forge jupyter-book pip
+          conda install sphinx-pythia-theme
           pip install git+https://github.com/pangeo-gallery/binderbot.git
+          conda list
 
       - name: Update execution environment
         if: |
@@ -178,8 +189,8 @@ jobs:
           || steps.env_change.outputs.any_changed == 'true')
           && steps.parse_config.outputs.execute_notebooks != 'binder'
         run: |
-          mamba env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
-          mamba install -c conda-forge sphinxcontrib-applehelp=1.0.4 sphinxcontrib-devhelp=1.0.2 sphinxcontrib-htmlhelp=2.0.1 sphinxcontrib-qthelp=1.0.3 sphinxcontrib-serializinghtml=1.1.5
+          conda env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
+          conda list
 
       - name: Get paths to notebook files
         if: |
@@ -203,6 +214,10 @@ jobs:
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
+          AQS_KEY: ${{ secrets.AQS_KEY }}
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
         run: |
           NOTEBOOKS=$(cat notebook_paths)
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
@@ -217,6 +232,10 @@ jobs:
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
+          AQS_KEY: ${{ secrets.AQS_KEY }}
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
         run: |
           NOTEBOOKS=$(cat notebook_paths)
           echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
@@ -241,6 +260,10 @@ jobs:
         env:
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
+          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
+          AQS_KEY: ${{ secrets.AQS_KEY }}
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
           SECRETS_VARS: ${{ toJson(secrets) }}
         run: |
           cd ${{ inputs.path_to_notebooks }}
