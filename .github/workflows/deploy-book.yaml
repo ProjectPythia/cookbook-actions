@@ -28,6 +28,7 @@ on:
         required: false
         default: '_build/html'
         type: string
+  workflow_dispatch:
       
 jobs:
   deploy:
