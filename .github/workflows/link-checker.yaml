@@ -49,7 +49,7 @@ jobs:
           miniforge-version: latest
 
       - name: Install Jupyterbook
-        run: conda install -c conda-forge jupyter-book python<3.13  # see https://github.com/ProjectPythia/cookbook-actions/issues/126
+        run: conda install -c conda-forge jupyter-book "python<3.13"  # see https://github.com/ProjectPythia/cookbook-actions/issues/126
 
       - name: Check for config file
         id: check_config
