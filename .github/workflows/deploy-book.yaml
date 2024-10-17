@@ -64,22 +64,22 @@ jobs:
         if: |
           (github.ref == 'refs/heads/main' && inputs.cname == 'None')
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: ${{ inputs.publish_dir }}
-          CLEAN: true
-          KEEP_HISTORY: false
-          BASE_PATH: ${{ inputs.destination_dir }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: ${{ inputs.publish_dir }}
+          clean: true
+          clean-exclude: "preview" # keep existing previews from other PRs
+          target-folder: ${{ inputs.destination_dir }}
 
       - name: Deploy to GitHub Pages with custom domain
         uses: JamesIves/github-pages-deploy-action@v4
         if: |
           (github.ref == 'refs/heads/main' && inputs.cname != 'None')
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: ${{ inputs.publish_dir }}
-          CLEAN: true
-          KEEP_HISTORY: false
-          BASE_PATH: ${{ inputs.destination_dir }}
-          CNAME: ${{ inputs.cname }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: ${{ inputs.publish_dir }}
+          clean: true
+          clean-exclude: "preview" # keep existing previews from other PRs
+          target-folder: ${{ inputs.destination_dir }}
+          CNAME: ${{ inputs.cname }} # how can we set this for the new action?
