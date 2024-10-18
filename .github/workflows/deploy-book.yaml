@@ -65,7 +65,7 @@ jobs:
         run: pwd
 
       - name: Debug
-        run: ls -la
+        run: ls -la book/_build/html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
