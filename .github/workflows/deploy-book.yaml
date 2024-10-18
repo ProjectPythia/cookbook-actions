@@ -59,6 +59,8 @@ jobs:
           unzip book.zip
           rm -f book.zip
 
+      - uses: actions/checkout@v4
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         if: |
