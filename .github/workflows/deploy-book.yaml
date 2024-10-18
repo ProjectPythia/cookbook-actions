@@ -36,6 +36,8 @@ jobs:
       run:
         shell: bash -l {0}
     steps: 
+      - uses: actions/checkout@v4
+      
       - name: Download merged artifact
         if: inputs.is_preview != 'true'
         uses: actions/download-artifact@v4
@@ -58,8 +60,6 @@ jobs:
           rm -rf _build/html
           unzip book.zip
           rm -f book.zip
-
-      - uses: actions/checkout@v4
 
       - name: Debug
         run: pwd
