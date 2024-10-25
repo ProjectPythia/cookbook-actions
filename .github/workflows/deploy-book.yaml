@@ -61,12 +61,6 @@ jobs:
           unzip book.zip
           rm -f book.zip
 
-      - name: Debug
-        run: pwd
-
-      - name: Debug
-        run: ls -la book/_build/html
-
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         if: |
