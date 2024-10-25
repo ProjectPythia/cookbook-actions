@@ -70,7 +70,7 @@ jobs:
           branch: gh-pages
           folder: ${{ inputs.publish_dir }}
           clean: true
-          clean-exclude: preview/*  # keep existing previews from other PRs
+          clean-exclude: _preview/*  # keep existing previews from other PRs
           target-folder: ${{ inputs.destination_dir }}
 
       - name: Deploy to GitHub Pages with custom domain
@@ -82,6 +82,6 @@ jobs:
           branch: gh-pages
           folder: ${{ inputs.publish_dir }}
           clean: true
-          clean-exclude: preview/*  # keep existing previews from other PRs
+          clean-exclude: _preview/*  # keep existing previews from other PRs
           target-folder: ${{ inputs.destination_dir }}
           CNAME: ${{ inputs.cname }} # how can we set this for the new action?
