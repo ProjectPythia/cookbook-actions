@@ -18,11 +18,6 @@ on:
         required: false
         default: 'false'
         type: string
-      cname:
-        description: 'Custom domain name'
-        required: false
-        default: 'None'  # This is just a flag for whether to ignore this input
-        type: string
       publish_dir:
         description: 'Publish dir for the action'
         required: false
@@ -64,7 +59,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         if: |
-          (github.ref == 'refs/heads/main' && inputs.cname == 'None')
+          (github.ref == 'refs/heads/main')
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
@@ -72,16 +67,3 @@ jobs:
           clean: true
           clean-exclude: _preview/*  # keep existing previews from other PRs
           target-folder: ${{ inputs.destination_dir }}
-
-      - name: Deploy to GitHub Pages with custom domain
-        uses: JamesIves/github-pages-deploy-action@v4
-        if: |
-          (github.ref == 'refs/heads/main' && inputs.cname != 'None')
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: gh-pages
-          folder: ${{ inputs.publish_dir }}
-          clean: true
-          clean-exclude: _preview/*  # keep existing previews from other PRs
-          target-folder: ${{ inputs.destination_dir }}
-          CNAME: ${{ inputs.cname }} # how can we set this for the new action?
