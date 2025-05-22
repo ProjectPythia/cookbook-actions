@@ -18,11 +18,6 @@ on:
         required: false
         default: 'false'
         type: string
-      cname:
-        description: 'Custom domain name'
-        required: false
-        default: 'None'  # This is just a flag for whether to ignore this input
-        type: string
       publish_dir:
         description: 'Publish dir for the action'
         required: false
@@ -36,6 +31,8 @@ jobs:
       run:
         shell: bash -l {0}
     steps: 
+      - uses: actions/checkout@v4
+      
       - name: Download merged artifact
         if: inputs.is_preview != 'true'
         uses: actions/download-artifact@v4
@@ -46,7 +43,7 @@ jobs:
       # because the artifact is created by a different workflow
       - name: Download preview artifact
         if: inputs.is_preview == 'true'
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v9
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: build-book.yaml
@@ -62,24 +59,11 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         if: |
-          (github.ref == 'refs/heads/main' && inputs.cname == 'None')
+          (github.ref == 'refs/heads/main')
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: ${{ inputs.publish_dir }}
-          CLEAN: true
-          KEEP_HISTORY: false
-          BASE_PATH: ${{ inputs.destination_dir }}
-
-      - name: Deploy to GitHub Pages with custom domain
-        uses: JamesIves/github-pages-deploy-action@v4
-        if: |
-          (github.ref == 'refs/heads/main' && inputs.cname != 'None')
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: ${{ inputs.publish_dir }}
-          CLEAN: true
-          KEEP_HISTORY: false
-          BASE_PATH: ${{ inputs.destination_dir }}
-          CNAME: ${{ inputs.cname }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: ${{ inputs.publish_dir }}
+          clean: true
+          clean-exclude: _preview/*  # keep existing previews from other PRs
+          target-folder: ${{ inputs.destination_dir }}
