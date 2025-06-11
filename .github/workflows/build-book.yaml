@@ -255,6 +255,11 @@ jobs:
           with open('${{ inputs.path_to_notebooks }}/_config.yml', 'w') as f:
             yaml.dump(data, f)
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         env:
