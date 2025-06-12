@@ -80,12 +80,17 @@ on:
         description: 'NASA Earthdata API Password'
         required: false
 
+env:
+  # `BASE_URL` determines the website is served from, including CSS & JS assets
+  # You may need to change this to `BASE_URL: ''`
+  BASE_URL: /${{ github.event.repository.name }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash -leo pipefail {0}
     steps:
       - name: Checkout the code from the repo
         if: inputs.build_from_code_artifact == 'false'
@@ -108,10 +113,11 @@ jobs:
         run: |
           unzip pr_code.zip
           rm -f pr_code.zip   
-
-      # - name: Fetch Repo Name
-      #   id: repo-name
-      #   run: echo "value=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_OUTPUT  # just the repo name, not owner
+    
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
 
       - name: Get GitHub environment variables
         id: get-env
@@ -151,12 +157,17 @@ jobs:
           echo '(DEBUG) The value of steps.env_change.outputs.any_changed is:'
           echo ${{ steps.env_change.outputs.any_changed }}
 
-      - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v3
+      # - name: Setup Miniforge
+      #   uses: conda-incubator/setup-miniconda@v3
+      #   with:
+      #     miniforge-version: latest
+      #     python-version: "3.10"  # binderbot is failing with python 3.11
+      #     activate-environment: ${{ inputs.environment_name }}
+      
+      - name: Setup environment with micromamba
+        uses: mamba-org/setup-micromamba@v2
         with:
-          miniforge-version: latest
-          python-version: "3.10"  # binderbot is failing with python 3.11
-          activate-environment: ${{ inputs.environment_name }}
+          environment-file: ${{ inputs.environment_file }}
 
       - name: Set cache date
         if: inputs.use_cached_environment == 'true'
@@ -182,15 +193,15 @@ jobs:
           pip install git+https://github.com/pangeo-gallery/binderbot.git
           conda list
 
-      - name: Update execution environment
-        if: |
-          (inputs.use_cached_environment != 'true'
-          || steps.cache.outputs.cache-hit != 'true'
-          || steps.env_change.outputs.any_changed == 'true')
-          && steps.parse_config.outputs.execute_notebooks != 'binder'
-        run: |
-          conda env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
-          conda list
+      # - name: Update execution environment
+      #   if: |
+      #     (inputs.use_cached_environment != 'true'
+      #     || steps.cache.outputs.cache-hit != 'true'
+      #     || steps.env_change.outputs.any_changed == 'true')
+      #     && steps.parse_config.outputs.execute_notebooks != 'binder'
+      #   run: |
+      #     conda env update -n ${{ inputs.environment_name }} -f ${{ inputs.environment_file }}
+      #     conda list
 
       - name: Get paths to notebook files
         if: |
@@ -255,11 +266,6 @@ jobs:
           with open('${{ inputs.path_to_notebooks }}/_config.yml', 'w') as f:
             yaml.dump(data, f)
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         env:
@@ -275,17 +281,22 @@ jobs:
           cd ${{ inputs.path_to_notebooks }}
           ${{ inputs.build_command }}
 
-      - name: Zip the book
-        run: |
-          set -x
-          set -e
-          if [ -f book.zip ]; then
-              rm -rf book.zip
-          fi
-          zip -r book.zip ${{ inputs.path_to_notebooks }}/ ${{ inputs.output_path }}
+      # - name: Zip the book
+      #   run: |
+      #     set -x
+      #     set -e
+      #     if [ -f book.zip ]; then
+      #         rm -rf book.zip
+      #     fi
+      #     zip -r book.zip ${{ inputs.path_to_notebooks }}/ ${{ inputs.output_path }}
 
-      - name: Upload zipped book artifact
-        uses: actions/upload-artifact@v4
+      # - name: Upload zipped book artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ inputs.artifact_name }}
+      #     path: ./book.zip
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: ${{ inputs.artifact_name }}
-          path: ./book.zip
+          path: './_build/html'
