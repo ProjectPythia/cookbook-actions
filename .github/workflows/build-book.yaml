@@ -83,10 +83,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # `BASE_URL` determines the website is served from, including CSS & JS assets
-      # You may need to change this to `BASE_URL: ''`
-      BASE_URL: /${{ github.event.repository.name }}
     defaults:
       run:
         shell: bash -l {0}
@@ -267,6 +263,7 @@ jobs:
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         env:
+          BASE_URL: /${{ github.repository }}
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
           AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
