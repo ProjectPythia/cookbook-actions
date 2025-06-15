@@ -282,20 +282,20 @@ jobs:
           cd ${{ inputs.path_to_notebooks }}
           ${{ inputs.build_command }}
 
-      # - name: Zip the book
-      #   run: |
-      #     set -x
-      #     set -e
-      #     if [ -f book.zip ]; then
-      #         rm -rf book.zip
-      #     fi
-      #     zip -r book.zip ${{ inputs.path_to_notebooks }}/ ${{ inputs.output_path }}
+      - name: Zip the book
+        run: |
+          set -x
+          set -e
+          if [ -f book.zip ]; then
+              rm -rf book.zip
+          fi
+          zip -r book.zip ${{ inputs.path_to_notebooks }}/ ${{ inputs.output_path }}
 
-      # - name: Upload zipped book artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ inputs.artifact_name }}
-      #     path: ./book.zip
+      - name: Upload zipped book artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ./book.zip
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
