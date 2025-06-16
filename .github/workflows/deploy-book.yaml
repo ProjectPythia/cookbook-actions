@@ -24,12 +24,6 @@ on:
         default: '_build/html'
         type: string
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
   deploy:
     environment:
