@@ -65,12 +65,6 @@ jobs:
           unzip book.zip
           rm -f book.zip
 
-      # - name: Deploy to GitHub Pages
-      #   id: deployment
-      #   uses: actions/deploy-pages@v4
-      #   with:
-      #     artifact_name: ${{ inputs.artifact_name }}
-
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         if: |
@@ -80,5 +74,5 @@ jobs:
           branch: gh-pages
           folder: ${{ inputs.publish_dir }}
           clean: true
-          clean-exclude: _preview/*  # keep existing previews from other PRs
-          target-folder: ${{ inputs.destination_dir }}
+          # clean-exclude: _preview/*  # keep existing previews from other PRs
+          # target-folder: ${{ inputs.destination_dir }}
