@@ -16,7 +16,7 @@ on:
       path_to_notebooks:
         description: 'Location of the JupyterBook source relative to repo root'
         required: false
-        default: './'
+        default: '.'
         type: string
       use_cached_environment:
         description: 'Flag for whether we should attempt to retrieve a previously cached environment.'
@@ -80,10 +80,10 @@ on:
         description: 'NASA Earthdata API Password'
         required: false
 
-env:
-  # `BASE_URL` determines the website is served from, including CSS & JS assets
-  # You may need to change this to `BASE_URL: ''`
-  BASE_URL: /${{ github.event.repository.name }}
+# env:
+#   # `BASE_URL` determines the website is served from, including CSS & JS assets
+#   # You may need to change this to `BASE_URL: ''`
+#   BASE_URL: /${{ github.event.repository.name }}
 
 jobs:
   build:
@@ -288,7 +288,7 @@ jobs:
           if [ -f book.zip ]; then
               rm -rf book.zip
           fi
-          zip -r book.zip ${{ inputs.path_to_notebooks }}/ ${{ inputs.output_path }}
+          zip -r book.zip ${{ inputs.path_to_notebooks }}/${{ inputs.output_path }}
 
       - name: Upload zipped book artifact
         uses: actions/upload-artifact@v4
