@@ -296,8 +296,3 @@ jobs:
         with:
           name: ${{ inputs.artifact_name }}
           path: ./book.zip
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './_build/html'
