@@ -80,10 +80,10 @@ on:
         description: 'NASA Earthdata API Password'
         required: false
 
-# env:
-#   # `BASE_URL` determines the website is served from, including CSS & JS assets
-#   # You may need to change this to `BASE_URL: ''`
-#   BASE_URL: /${{ github.event.repository.name }}
+env:
+  # `BASE_URL` determines the website is served from, including CSS & JS assets
+  # You may need to change this to `BASE_URL: ''`
+  BASE_URL: /${{ github.event.repository.name }}
 
 jobs:
   build:
@@ -123,39 +123,39 @@ jobs:
         id: get-env
         uses: FranzDiebold/github-env-vars-action@v2
       
-      - name: Check for config file
-        id: check_config
-        uses: andstor/file-existence-action@v3
-        with:
-          files: "${{ inputs.path_to_notebooks }}/_config.yml"
+      # - name: Check for config file
+      #   id: check_config
+      #   uses: andstor/file-existence-action@v3
+      #   with:
+      #     files: "${{ inputs.path_to_notebooks }}/_config.yml"
       
-      - name: Parse config file
-        id: parse_config
-        if: steps.check_config.outputs.files_exists == 'true'
-        uses: CumulusDS/get-yaml-paths-action@v1.0.2
-        with:
-          file: ${{ inputs.path_to_notebooks }}/_config.yml
-          execute_notebooks: execute.execute_notebooks
-          binderhub_url: sphinx.config.html_theme_options.launch_buttons.binderhub_url
-          timeout: execute.timeout
+      # - name: Parse config file
+      #   id: parse_config
+      #   if: steps.check_config.outputs.files_exists == 'true'
+      #   uses: CumulusDS/get-yaml-paths-action@v1.0.2
+      #   with:
+      #     file: ${{ inputs.path_to_notebooks }}/_config.yml
+      #     execute_notebooks: execute.execute_notebooks
+      #     binderhub_url: sphinx.config.html_theme_options.launch_buttons.binderhub_url
+      #     timeout: execute.timeout
 
-      - name: Echo values from config file
-        if: steps.check_config.outputs.files_exists == 'true'
-        run: |
-          echo ${{ steps.parse_config.outputs.execute_notebooks }}
-          echo ${{ steps.parse_config.outputs.binderhub_url }}
-          echo ${{ steps.parse_config.outputs.timeout }}
+      # - name: Echo values from config file
+      #   if: steps.check_config.outputs.files_exists == 'true'
+      #   run: |
+      #     echo ${{ steps.parse_config.outputs.execute_notebooks }}
+      #     echo ${{ steps.parse_config.outputs.binderhub_url }}
+      #     echo ${{ steps.parse_config.outputs.timeout }}
 
-      - name: Test for environment change
-        id: env_change
-        uses: tj-actions/changed-files@v46
-        with:
-          files: ${{ inputs.environment_file }}
+      # - name: Test for environment change
+      #   id: env_change
+      #   uses: tj-actions/changed-files@v46
+      #   with:
+      #     files: ${{ inputs.environment_file }}
 
-      - name: Echo environment change test result
-        run: |
-          echo '(DEBUG) The value of steps.env_change.outputs.any_changed is:'
-          echo ${{ steps.env_change.outputs.any_changed }}
+      # - name: Echo environment change test result
+      #   run: |
+      #     echo '(DEBUG) The value of steps.env_change.outputs.any_changed is:'
+      #     echo ${{ steps.env_change.outputs.any_changed }}
 
       # - name: Setup Miniforge
       #   uses: conda-incubator/setup-miniconda@v3
@@ -169,29 +169,29 @@ jobs:
         with:
           environment-file: ${{ inputs.environment_file }}
 
-      - name: Set cache date
-        if: inputs.use_cached_environment == 'true'
-        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      # - name: Set cache date
+      #   if: inputs.use_cached_environment == 'true'
+      #   run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
 
-      - uses: actions/cache@v4
-        if: inputs.use_cached_environment == 'true'
-        with:
-          path: /usr/share/miniconda3/envs/${{ inputs.environment_name }}
-          # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-_config.yml-[HASH]-DATE'
-          # Logic inspired by https://dev.to/epassaro/caching-anaconda-environments-on-github-actions-2d08
-          key: ${{ format('linux-64-conda-{0}-{1}-{2}-{3}-{4}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), '_config.yml', hashFiles(format('{0}', '_config.yml')), env.DATE )}}
-        id: cache
+      # - uses: actions/cache@v4
+      #   if: inputs.use_cached_environment == 'true'
+      #   with:
+      #     path: /usr/share/miniconda3/envs/${{ inputs.environment_name }}
+      #     # This should create a key that looks like 'linux-64-conda-environment.yml-[HASH]-_config.yml-[HASH]-DATE'
+      #     # Logic inspired by https://dev.to/epassaro/caching-anaconda-environments-on-github-actions-2d08
+      #     key: ${{ format('linux-64-conda-{0}-{1}-{2}-{3}-{4}', inputs.environment_file, hashFiles(format('{0}', inputs.environment_file)), '_config.yml', hashFiles(format('{0}', '_config.yml')), env.DATE )}}
+      #   id: cache
       
-      - name: Create book build environment
-        if: |
-          (inputs.use_cached_environment != 'true'
-          || steps.cache.outputs.cache-hit != 'true')
-          && steps.parse_config.outputs.execute_notebooks == 'binder'
-        run: |
-          conda install -c conda-forge jupyter-book pip
-          conda install sphinx-pythia-theme
-          pip install git+https://github.com/pangeo-gallery/binderbot.git
-          conda list
+      # - name: Create book build environment
+      #   if: |
+      #     (inputs.use_cached_environment != 'true'
+      #     || steps.cache.outputs.cache-hit != 'true')
+      #     && steps.parse_config.outputs.execute_notebooks == 'binder'
+      #   run: |
+      #     conda install -c conda-forge jupyter-book pip
+      #     conda install sphinx-pythia-theme
+      #     pip install git+https://github.com/pangeo-gallery/binderbot.git
+      #     conda list
 
       # - name: Update execution environment
       #   if: |
