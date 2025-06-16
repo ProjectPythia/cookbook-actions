@@ -18,11 +18,6 @@ on:
         required: false
         default: '.'
         type: string
-      # use_cached_environment:
-      #   description: 'Flag for whether we should attempt to retrieve a previously cached environment.'
-      #   required: false
-      #   default: 'true'
-      #   type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
       artifact_name:
         description: 'The name to assign to the built book artifact.'
         required: false
