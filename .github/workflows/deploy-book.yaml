@@ -23,16 +23,13 @@ on:
         required: false
         default: '_build/html'
         type: string
-
+      
 jobs:
   deploy:
-    # environment:
-    #   name: github-pages
-    #   url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash -leo pipefail {0}
+        shell: bash -l {0}
     steps: 
       - uses: actions/checkout@v4
       
