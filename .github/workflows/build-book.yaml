@@ -22,7 +22,7 @@ on:
         description: 'Flag for whether we should attempt to retrieve a previously cached environment.'
         required: false
         default: 'true'
-        type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483${{ github.repository }}
+        type: string  # had a lot of trouble with boolean types, see https://github.com/actions/runner/issues/1483
       artifact_name:
         description: 'The name to assign to the built book artifact.'
         required: false
@@ -58,7 +58,11 @@ on:
         required: false
         default: success
         type: string
-
+      base_url:
+        description: 'Determines where the website is served from, including CSS & JS assets (needed for MyST)'
+        required: false
+        default: '/${{ github.event.repository.name }}'
+        type: string
 
     secrets:
       ARM_USERNAME:
@@ -83,7 +87,7 @@ on:
 env:
   # `BASE_URL` determines the website is served from, including CSS & JS assets
   # You may need to change this to `BASE_URL: ''`
-  BASE_URL: /${{ github.event.repository.name }}
+  BASE_URL: ${{ inputs.base_url }}
 
 jobs:
   build:
