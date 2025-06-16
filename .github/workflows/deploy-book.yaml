@@ -68,5 +68,5 @@ jobs:
           branch: gh-pages
           folder: ${{ inputs.publish_dir }}
           clean: true
-          # clean-exclude: _preview/*  # keep existing previews from other PRs
+          clean-exclude: _preview/*  # keep existing previews from other PRs
           # target-folder: ${{ inputs.destination_dir }}
