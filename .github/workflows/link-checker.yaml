@@ -8,7 +8,7 @@ on:
         required: false
         default: 'cookbook-dev'
         type: string
-      environment_file:  # Ignored! Just here for backwards compatibility
+      environment_file:  
         description: 'Name of conda environment file'
         required: false
         default: 'environment.yml'
@@ -43,13 +43,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Miniforge
-        uses: conda-incubator/setup-miniconda@v3
+      - name: Setup environment with micromamba
+        uses: mamba-org/setup-micromamba@v2
         with:
-          miniforge-version: latest
-
-      - name: Install Jupyterbook
-        run: conda install -c conda-forge jupyter-book "python<3.13"  # see https://github.com/ProjectPythia/cookbook-actions/issues/126
+          environment-file: ${{ inputs.environment_file }}
 
       - name: Check for config file
         id: check_config
