@@ -26,7 +26,7 @@ on:
       build_command:
         description: 'The linux command to build the book or site.'
         required: false
-        default: 'jupyter-book build .'
+        default: 'myst build --execute --html'
         type: string
       output_path:
         description: 'Path to the built html content relative to `path_to_notebooks`'
