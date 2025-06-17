@@ -98,7 +98,7 @@ jobs:
       - name: Download code artifact
         id: get_code_artifact
         if: inputs.build_from_code_artifact == 'true'
-        uses: dawidd6/action-download-artifact@v10
+        uses: dawidd6/action-download-artifact@v11
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: ${{ inputs.workflow }}
