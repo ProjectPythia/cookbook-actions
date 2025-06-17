@@ -42,19 +42,11 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup environment with micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: ${{ inputs.environment_file }}
-
-      # - name: Setup Miniforge
-      #   uses: conda-incubator/setup-miniconda@v3
-      #   with:
-      #     miniforge-version: latest
-
-      # - name: Install Jupyterbook
-      #   run: conda install -c conda-forge jupyter-book "python<3.13"  # see https://github.com/ProjectPythia/cookbook-actions/issues/126
 
       - name: Check for config file
         id: check_config
