@@ -111,11 +111,6 @@ jobs:
         run: |
           unzip pr_code.zip
           rm -f pr_code.zip   
-    
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
 
       - name: Get GitHub environment variables
         id: get-env
