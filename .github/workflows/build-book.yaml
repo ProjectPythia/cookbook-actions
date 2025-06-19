@@ -60,6 +60,12 @@ on:
         type: string
 
     secrets:
+      PRIVATE_KEY:
+        description: 'Google analytics key needed for metrics page on portal site'
+        required: false
+      PRIVATE_KEY_ID:
+        description: 'Google analytics key id needed for metrics page on portal site'
+        required: false
       ARM_USERNAME:
         description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
         required: false
@@ -232,7 +238,8 @@ jobs:
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         env:
-          # BASE_URL: /${{ github.repository }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
           ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
           ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
           AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
