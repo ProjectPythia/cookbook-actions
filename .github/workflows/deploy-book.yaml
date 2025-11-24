@@ -31,7 +31,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps: 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       
       - name: Download merged artifact
         if: inputs.is_preview != 'true'
