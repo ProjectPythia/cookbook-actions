@@ -41,7 +41,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup environment with micromamba
         uses: mamba-org/setup-micromamba@v2
