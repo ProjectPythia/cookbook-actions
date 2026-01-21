@@ -33,6 +33,11 @@ on:
         required: false
         default: false
         type: boolean
+      cache_execution:
+        description: "Cache executed notebooks"
+        required: false
+        default: true
+        type: boolean
       output_path:
         description: 'Path to the built html content relative to `path_to_notebooks`'
         required: false
@@ -148,6 +153,13 @@ jobs:
           # Environment reference
           ref: ${{ steps.env_change.outputs.any_changed == 'true' && env.CI_ACTION_REF_NAME || 'main' }}
 
+      - name: Cache execution
+        id: inputs.cache_execution
+        uses: actions/cache@v4
+        with:
+          path: ${{ inputs.path_to_notebooks }}/_build/execute
+          key: ${{ runner.os }}-${{ inputs.path_to_notebooks }}-${{ inputs.build_command }}
+-execution
       - name: Build the book
         env:
           # TODO: provision remote environment with secrets, e.g. https://github.com/agoose77/jupyter-environment-provisioner
