@@ -154,7 +154,7 @@ jobs:
           ref: ${{ steps.env_change.outputs.any_changed == 'true' && env.CI_ACTION_REF_NAME || 'main' }}
 
       - name: Cache execution
-        id: inputs.cache_execution
+        if: inputs.cache_execution
         uses: actions/cache@v4
         with:
           path: ${{ inputs.path_to_notebooks }}/_build/execute
