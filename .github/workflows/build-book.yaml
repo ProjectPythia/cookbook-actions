@@ -259,9 +259,16 @@ jobs:
               rm -rf book.zip
           fi
           zip -r book.zip ${{ inputs.path_to_notebooks }}/${{ inputs.output_path }}
+          zip -r full-book.zip ${{ inputs.path_to_notebooks }}
 
-      - name: Upload zipped book artifact
+      - name: Upload zipped rendered book artifact
         uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: ./book.zip
+
+      - name: Upload zipped full book artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ inputs.artifact_name }}-full
+          path: ./full-book.zip
