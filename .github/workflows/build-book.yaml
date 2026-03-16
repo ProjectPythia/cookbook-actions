@@ -60,16 +60,6 @@ jobs:
           unzip pr_code.zip
           rm -f pr_code.zip
 
-      - name: Load cookbook configuration
-        id: config
-        uses: CumulusDS/get-yaml-paths-action@v1.0.1
-        with:
-          file: cookbook.yml
-          # Settings JMES paths
-          execute: execution.enable
-          cacheExecution: execution.use-cache
-          executeOnBinder: execution.use-binder
-
       - name: Test for environment change
         id: env_change
         uses: tj-actions/changed-files@v47
@@ -87,26 +77,26 @@ jobs:
           environment-file: "${{ env.ENV_FILE }}"
 
       - name: Setup execution environment on a BinderHub
-        if: steps.config.executeOnBinder && steps.config.execute
+        if: vars.USE_BINDER && !vars.NO_EXECUTE
         # This action sets up evironment variables for e.g. mystmd to recognise and use
         uses: 2i2c-org/clinder@action-v1
         with:
           hub-url: https://binder.projectpythia.org/
 
       - name: Cache execution
-        if: steps.config.cacheExecution && steps.config.execute
+        if: !vars.NO_CACHE && !vars.NO_EXECUTE
         uses: actions/cache@v4
         with:
           path: ${{ inputs.path_to_notebooks }}/_build/execute
           key: ${{ runner.os }}-${{ hashFiles(env.ENV_FILE) }}-execution
 
       - name: Build the book with execution
-        if: steps.config.execute
+        if: !vars.NO_EXECUTE
         run: |
           myst build --execute --html --strict
 
       - name: Build the book without execution
-        if: !steps.config.execute
+        if: vars.NO_EXECUTE
         run: |
           myst build --html --strict
 
@@ -117,7 +107,7 @@ jobs:
           if [ -f book.zip ]; then
               rm -rf book.zip
           fi
-          zip -r book.zip ${{ inputs.path_to_notebooks }}/${{ inputs.output_path }}
+          zip -r book.zip ./build/html
 
       - name: Upload zipped book artifact
         uses: actions/upload-artifact@v6
