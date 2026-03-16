@@ -30,16 +30,13 @@
     "execution": {
       "properties": {
         "enable": {
-          "type": "boolean",
-          "default": true
+          "type": "boolean"
         },
         "use-cache": {
-          "type": "boolean",
-          "default": true
+          "type": "boolean"
         },
         "use-binder": {
-          "type": "boolean",
-          "default": false
+          "type": "boolean"
         }
       },
       "required": [],
@@ -49,12 +46,10 @@
     "build": {
       "properties": {
         "root": {
-          "type": "string",
-          "default": "."
+          "type": "string"
         },
         "environment": {
-          "type": "boolean",
-          "default": "environment.yml"
+          "type": "boolean"
         }
       },
       "required": [],
