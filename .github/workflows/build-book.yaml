@@ -3,58 +3,19 @@ name: build-book
 on:
   workflow_call:
     inputs:
-      environment_name:
-        description: 'Name of conda environment to activate (NO LONGER USED)'
+      # Control of build input
+      build_from_artifact:
+        description: "Should we try to build from a previously uploaded code artifact?"
         required: false
-        default: 'cookbook-dev'
-        type: string
-      environment_file:
-        description: 'Name of conda environment file'
-        required: false
-        default: 'environment.yml'
-        type: string
-      path_to_notebooks:
-        description: 'Location of the JupyterBook source relative to repo root'
-        required: false
-        default: '.'
-        type: string
-      artifact_name:
-        description: 'The name to assign to the built book artifact.'
-        required: false
-        default: 'book-zip'
-        type: string
-      build_command:
-        description: 'The linux command to build the book or site.'
-        required: false
-        default: 'myst build --execute --html'
-        type: string
-      execute_on_binderhub:
-        description: "Execute notebooks on a BinderHub"
-        required: false
-        default: false
-        type: boolean
-      cache_execution:
-        description: "Cache executed notebooks"
-        required: false
-        default: true
-        type: boolean
-      output_path:
-        description: 'Path to the built html content relative to `path_to_notebooks`'
-        required: false
-        default: '_build/html'
-        type: string
-      build_from_code_artifact:
-        description: 'Should we try to build from a previously uploaded code artifact?'
-        required: false
-        default: 'false'
+        default: "false"
         type: string
       code_artifact_name:
-        description: 'Name of zipped artifact passed in, instead of checking out the repository.'
+        description: "Name of zipped artifact passed in, instead of checking out the repository."
         required: false
-        default: 'code-zip'
+        default: "code-zip"
         type: string
       workflow:
-        description: 'Identify the workflow that produced the artifact'
+        description: "Identify the workflow that produced the artifact"
         required: false
         default: trigger-book-build.yaml
         type: string
@@ -63,41 +24,10 @@ on:
         required: false
         default: success
         type: string
-      base_url:
-        description: 'Determines where the website is served from, including CSS & JS assets (needed for MyST)'
-        required: false
-        default: '/${{ github.event.repository.name }}'
-        type: string
-
-    secrets:
-      PRIVATE_KEY:
-        description: 'Google analytics key needed for metrics page on portal site'
-        required: false
-      PRIVATE_KEY_ID:
-        description: 'Google analytics key id needed for metrics page on portal site'
-        required: false
-      ARM_USERNAME:
-        description: 'Username for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
-        required: false
-      ARM_PASSWORD:
-        description: 'Password for the ARM Data Discovery portal (https://adc.arm.gov/armlive/)'
-        required: false
-      AQS_USERNAME:
-        description: 'Username for the AQS Data Portal'
-        required: false
-      AQS_KEY:
-        description: 'Key for the AQS Data Portal'
-        required: false
-      EARTHDATA_USERNAME:
-        description: 'NASA Earthdata API Username'
-        required: false
-      EARTHDATA_PASSWORD:
-        description: 'NASA Earthdata API Password'
-        required: false
 
 env:
   # the BASE_URL environment variable needs to be set if building with myst
-  BASE_URL: ${{ inputs.base_url }}
+  BASE_URL: "/${{ github.event.repository.name }}"
 
 jobs:
   build:
@@ -105,6 +35,8 @@ jobs:
     defaults:
       run:
         shell: bash -leo pipefail {0}
+    env:
+      ENV_FILE: environment.yml
     steps:
       - name: Checkout the code from the repo
         if: inputs.build_from_code_artifact == 'false'
@@ -128,11 +60,21 @@ jobs:
           unzip pr_code.zip
           rm -f pr_code.zip
 
+      - name: Load cookbook configuration
+        id: config
+        uses: CumulusDS/get-yaml-paths-action@v1.0.1
+        with:
+          file: cookbook.yml
+          # Settings JMES paths
+          execute: execution.enable
+          cacheExecution: execution.use-cache
+          executeOnBinder: execution.use-binder
+
       - name: Test for environment change
         id: env_change
         uses: tj-actions/changed-files@v47
         with:
-          files: ${{ inputs.environment_file }}
+          files: "${{ env.ENV_FILE }}"
 
       - name: Echo environment change test result
         run: |
@@ -142,38 +84,31 @@ jobs:
       - name: Setup environment with micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
-          environment-file: ${{ inputs.environment_file }}
+          environment-file: "${{ env.ENV_FILE }}"
 
       - name: Setup execution environment on a BinderHub
-        if: inputs.execute_on_binderhub
+        if: steps.config.executeOnBinder && steps.config.execute
         # This action sets up evironment variables for e.g. mystmd to recognise and use
         uses: 2i2c-org/clinder@action-v1
         with:
           hub-url: https://binder.projectpythia.org/
-          # Environment reference
-          ref: ${{ steps.env_change.outputs.any_changed == 'true' && env.CI_ACTION_REF_NAME || 'main' }}
 
       - name: Cache execution
-        if: inputs.cache_execution
+        if: steps.config.cacheExecution && steps.config.execute
         uses: actions/cache@v4
         with:
           path: ${{ inputs.path_to_notebooks }}/_build/execute
-          key: ${{ runner.os }}-${{ hashFiles(inputs.environment_file) }}-${{ inputs.path_to_notebooks }}-${{ inputs.build_command }}-execution
-      - name: Build the book
-        env:
-          # TODO: provision remote environment with secrets, e.g. https://github.com/agoose77/jupyter-environment-provisioner
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          PRIVATE_KEY_ID: ${{ secrets.PRIVATE_KEY_ID }}
-          ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
-          ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
-          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
-          AQS_KEY: ${{ secrets.AQS_KEY }}
-          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
-          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
-          SECRETS_VARS: ${{ toJson(secrets) }}
+          key: ${{ runner.os }}-${{ hashFiles(env.ENV_FILE) }}-execution
+
+      - name: Build the book with execution
+        if: steps.config.execute
         run: |
-          cd ${{ inputs.path_to_notebooks }}
-          ${{ inputs.build_command }}
+          myst build --execute --html --strict
+
+      - name: Build the book without execution
+        if: !steps.config.execute
+        run: |
+          myst build --html --strict
 
       - name: Zip the book
         run: |
