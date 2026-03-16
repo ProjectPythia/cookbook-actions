@@ -8,12 +8,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  config-validator:
+  cookbook-validator:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      THIS_ACTION_REF: "${{github.action_ref}}"
     steps:
       - uses: actions/checkout@v6
       - name: Validate workflows
@@ -23,3 +21,15 @@ jobs:
           # The latest version of the schema should always be used for validation.
           schema: https://raw.githubusercontent.com/ProjectPythia/cookbook-actions/refs/heads/feat/clinder/cookbook.schema.json
           files: cookbook.yaml
+  myst-validator:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate workflows
+        uses: dsanders11/json-schema-validate-action@v2.0.0
+        with:
+          # Assume that MyST schema is unchanging
+          schema: https://raw.githubusercontent.com/ProjectPythia/cookbook-actions/refs/heads/feat/clinder/myst.schema.json
+          files: myst.yaml
