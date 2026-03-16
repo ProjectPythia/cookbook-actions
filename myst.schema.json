@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/projectpythia/pythia-config/myst.schema.json",
+  "$ref": "#/definitions/myst.yml",
+  "definitions": {
+    "myst.yml": {
+      "type": "object",
+      "required": ["project"],
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/project"
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["thumbnail", "tags"],
+      "properties": {
+        "thumbnail": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

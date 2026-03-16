@@ -15,9 +15,6 @@
         "version": {
           "const": 1
         },
-        "gallery": {
-          "$ref": "#/definitions/gallery"
-        },
         "ci": {
           "$ref": "#/definitions/ci"
         }
@@ -37,29 +34,6 @@
       "required": [],
       "type": "object",
       "additionalProperties": false
-    },
-    "gallery": {
-      "properties": {
-        "thumbnail": {
-          "type": "string"
-        },
-        "tags": {
-          "$ref": "#/definitions/tags"
-        }
-      },
-      "required": [],
-      "type": "object",
-      "additionalProperties": false
-    },
-    "tags": {
-      "type": "object",
-      "properties": {},
-      "additionalProperties": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      }
     }
   }
 }
