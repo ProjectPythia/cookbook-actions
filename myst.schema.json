@@ -14,8 +14,11 @@
     },
     "project": {
       "type": "object",
-      "required": ["thumbnail", "tags"],
+      "required": ["title", "thumbnail", "tags"],
       "properties": {
+        "title": {
+          "type": "string"
+        },
         "thumbnail": {
           "type": "string"
         },

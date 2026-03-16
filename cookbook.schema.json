@@ -5,7 +5,11 @@
   "definitions": {
     "config": {
       "$comment": "Allow multiple versions of config to co-exist across a set of repositories by requiring the schema version",
-      "oneOf": [{ "$ref": "#/definitions/configV1" }]
+      "oneOf": [
+        {
+          "$ref": "#/definitions/configV1"
+        }
+      ]
     },
     "configV1": {
       "type": "object",
@@ -15,20 +19,42 @@
         "version": {
           "const": 1
         },
-        "ci": {
-          "$ref": "#/definitions/ci"
+        "execution": {
+          "$ref": "#/definitions/execution"
+        },
+        "build": {
+          "$ref": "#/definitions/build"
         }
       }
     },
-    "ci": {
+    "execution": {
       "properties": {
-        "cache-execution": {
+        "enable": {
           "type": "boolean",
           "default": true
         },
-        "execute-on-binder": {
+        "use-cache": {
+          "type": "boolean",
+          "default": true
+        },
+        "use-binder": {
           "type": "boolean",
           "default": false
+        }
+      },
+      "required": [],
+      "type": "object",
+      "additionalProperties": false
+    },
+    "build": {
+      "properties": {
+        "root": {
+          "type": "string",
+          "default": "."
+        },
+        "environment": {
+          "type": "boolean",
+          "default": "environment.yml"
         }
       },
       "required": [],
