@@ -21,9 +21,6 @@
         },
         "execution": {
           "$ref": "#/definitions/execution"
-        },
-        "build": {
-          "$ref": "#/definitions/build"
         }
       }
     },
@@ -36,19 +33,6 @@
           "type": "boolean"
         },
         "use-binder": {
-          "type": "boolean"
-        }
-      },
-      "required": [],
-      "type": "object",
-      "additionalProperties": false
-    },
-    "build": {
-      "properties": {
-        "root": {
-          "type": "string"
-        },
-        "environment": {
           "type": "boolean"
         }
       },
