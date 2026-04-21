@@ -104,7 +104,7 @@ jobs:
       - name: Download code artifact
         id: get_code_artifact
         if: inputs.build_from_code_artifact == 'true'
-        uses: dawidd6/action-download-artifact@v15
+        uses: dawidd6/action-download-artifact@v19
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: ${{ inputs.workflow }}
@@ -261,7 +261,7 @@ jobs:
           zip -r book.zip ${{ inputs.path_to_notebooks }}/${{ inputs.output_path }}
 
       - name: Upload zipped book artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
           path: ./book.zip
