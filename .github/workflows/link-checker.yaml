@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup environment with micromamba
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@v3
         with:
           environment-file: ${{ inputs.environment_file }}
 
