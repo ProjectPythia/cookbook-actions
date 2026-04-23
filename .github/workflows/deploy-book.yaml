@@ -62,6 +62,8 @@ jobs:
           (github.ref == 'refs/heads/main')
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          git-config-name: 'github-actions[bot]'
+          git-config-email: 'github-actions[bot]@users.noreply.github.com'
           branch: gh-pages
           folder: ${{ inputs.publish_dir }}
           clean: true
