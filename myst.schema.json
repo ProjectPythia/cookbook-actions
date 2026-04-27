@@ -25,7 +25,18 @@
         "tags": {
           "type": "array",
           "items": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["cookbook:build-on-binder"]
+              },
+              {
+                "not": {
+                  "type": "string",
+                  "pattern": "^cookbook:.*"
+                }
+              }
+            ]
           }
         }
       }
