@@ -43,7 +43,7 @@ jobs:
           hub-url: https://binder.projectpythia.org/
 
       - name: Cache execution
-        if: !steps.myst-tags.outputs.build-on-binder
+        if: "!steps.myst-tags.outputs.build-on-binder"
         uses: actions/cache@v4
         with:
           path: ${{ inputs.path_to_notebooks }}/_build/execute
