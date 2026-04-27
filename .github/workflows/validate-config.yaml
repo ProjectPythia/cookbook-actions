@@ -1,0 +1,28 @@
+name: validate-config
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -leo pipefail {0}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          # TODO: imrprove this
+          repository: ProjectPythia/cookbook-actions
+          ref: feat/clinder
+          sparse-checkout: |
+            myst.schema.json
+          sparse-checkout-cone-mode: false
+      - name: Run myst.yml validator
+        run: |
+          npx --yes ajv-cli -- \
+            validate \
+            -s myst.schema.json \
+            -d myst.yml \
+            --spec=draft2020
