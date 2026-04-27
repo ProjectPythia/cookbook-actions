@@ -13,14 +13,12 @@ jobs:
     defaults:
       run:
         shell: bash -leo pipefail {0}
-    env:
-      ENV_FILE: environment.yml
     steps:
       - name: Test for environment change
         id: env_change
         uses: tj-actions/changed-files@v47
         with:
-          files: "${{ env.ENV_FILE }}"
+          files: environment.yml
 
       - name: Echo environment change test result
         run: |
@@ -30,7 +28,7 @@ jobs:
       - name: Setup environment with micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
-          environment-file: "${{ env.ENV_FILE }}"
+          environment-file: environment.yml
 
       - name: Check for myst.yml tags
         id: myst-tags
