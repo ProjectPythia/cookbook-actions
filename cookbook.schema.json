@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/projectpythia/pythia-config/cookbook.schema.json",
+  "$ref": "#/definitions/config",
+  "definitions": {
+    "config": {
+      "$comment": "Allow multiple versions of config to co-exist across a set of repositories by requiring the schema version",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/configV1"
+        }
+      ]
+    },
+    "configV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version"],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "execution": {
+          "$ref": "#/definitions/execution"
+        }
+      }
+    },
+    "execution": {
+      "properties": {
+        "enable": {
+          "type": "boolean"
+        },
+        "use-cache": {
+          "type": "boolean"
+        },
+        "use-binder": {
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "type": "object",
+      "additionalProperties": false
+    }
+  }
+}
