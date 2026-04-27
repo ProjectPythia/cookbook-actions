@@ -70,7 +70,7 @@ jobs:
       - name: Stash the artifact URL
         run: |
           # Use env for safer handling.
-          echo "URL={{ steps.site-artifact.artifact-url }}" >> "$GITHUB_ENV"
+          echo "URL=${{ steps.site-artifact.artifact-url }}" >> "$GITHUB_ENV"
       - name: Display the preview URL
         run: |
           # Escape component
