@@ -61,7 +61,23 @@ jobs:
           fi
 
       - name: Upload zipped AST artifact
+        id: site-artifact
         uses: actions/upload-artifact@v6
         with:
           name: cookbook-ast
           path: _build/site/
+
+      - name: Display build URL
+        run: |
+          # Use env for safer handling.
+          echo "URL={{ steps.site-artifact.artifact-url }}" >> "$GITHUB_ENV"
+
+          # Escape component
+          python - <<- 'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import urllib.parse, os; 
+          component = urllib.parse.quote(os.environ['URL'])
+          print(f"https://https://jupyterbook.pub/repo/{component}")
+          EOF
+
+
+
