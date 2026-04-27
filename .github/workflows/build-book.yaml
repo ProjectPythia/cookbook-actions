@@ -74,8 +74,5 @@ jobs:
           python - <<- 'EOF' >> "$GITHUB_STEP_SUMMARY"
           import urllib.parse, os; 
           component = urllib.parse.quote(os.environ['URL'])
-          print(f"https://https://jupyterbook.pub/repo/{component}")
+          print(f"Preview this build at https://https://jupyterbook.pub/repo/{component}")
           EOF
-
-
-
