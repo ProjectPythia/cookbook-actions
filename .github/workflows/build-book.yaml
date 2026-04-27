@@ -2,28 +2,6 @@ name: build-book
 
 on:
   workflow_call:
-    inputs:
-      # Control of build input
-      build_from_artifact:
-        description: "Should we try to build from a previously uploaded code artifact?"
-        required: false
-        default: "false"
-        type: string
-      code_artifact_name:
-        description: "Name of zipped artifact passed in, instead of checking out the repository."
-        required: false
-        default: "code-zip"
-        type: string
-      workflow:
-        description: "Identify the workflow that produced the artifact"
-        required: false
-        default: trigger-book-build.yaml
-        type: string
-      workflow_conclusion:
-        description: 'Workflow conclusion (options: "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required") or status (options: "completed", "in_progress", "queued") to search for. Use the empty string ("") to ignore status or conclusion in the search.'
-        required: false
-        default: success
-        type: string
 
 env:
   # the BASE_URL environment variable needs to be set if building with myst
@@ -38,28 +16,6 @@ jobs:
     env:
       ENV_FILE: environment.yml
     steps:
-      - name: Checkout the code from the repo
-        if: inputs.build_from_code_artifact == 'false'
-        uses: actions/checkout@v6
-
-      #  The next two steps should replicated checking out the code
-      - name: Download code artifact
-        id: get_code_artifact
-        if: inputs.build_from_code_artifact == 'true'
-        uses: dawidd6/action-download-artifact@v14
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: ${{ inputs.workflow }}
-          run_id: ${{ github.event.workflow_run.id }}
-          name: ${{ inputs.code_artifact_name }}
-          workflow_conclusion: ${{ inputs.workflow_conclusion }}
-
-      - name: Unzip the code
-        if: inputs.build_from_code_artifact == 'true'
-        run: |
-          unzip pr_code.zip
-          rm -f pr_code.zip
-
       - name: Test for environment change
         id: env_change
         uses: tj-actions/changed-files@v47
@@ -76,41 +32,36 @@ jobs:
         with:
           environment-file: "${{ env.ENV_FILE }}"
 
+      - name: Check for myst.yml tags
+        id: myst-tags
+        run: |
+          yq '.project.tags | filter(test("^foo:"))[] | sub("foo:(.*)","$1=1")' | tee "$GITHUB_OUTPUT"
+
       - name: Setup execution environment on a BinderHub
-        if: vars.USE_BINDER && !vars.NO_EXECUTE
+        if: steps.myst-tags.outputs.build-on-binder
         # This action sets up evironment variables for e.g. mystmd to recognise and use
         uses: 2i2c-org/clinder@action-v1
         with:
           hub-url: https://binder.projectpythia.org/
 
       - name: Cache execution
-        if: !vars.NO_CACHE && !vars.NO_EXECUTE
+        if: !steps.myst-tags.outputs.build-on-binder
         uses: actions/cache@v4
         with:
           path: ${{ inputs.path_to_notebooks }}/_build/execute
           key: ${{ runner.os }}-${{ hashFiles(env.ENV_FILE) }}-execution
 
-      - name: Build the book with execution
-        if: !vars.NO_EXECUTE
+      - name: Build the book
         run: |
-          myst build --execute --html --strict
-
-      - name: Build the book without execution
-        if: vars.NO_EXECUTE
-        run: |
-          myst build --html --strict
-
-      - name: Zip the book
-        run: |
-          set -x
-          set -e
-          if [ -f book.zip ]; then
-              rm -rf book.zip
+          # Allow custom build command
+          if [[ -x "build.sh" ]]; then
+            ./build.sh
+          else
+            myst build --execute --site --strict
           fi
-          zip -r book.zip ./build/html
 
-      - name: Upload zipped book artifact
+      - name: Upload zipped AST artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ inputs.artifact_name }}
-          path: ./book.zip
+          name: cookbook-ast
+          path: _build/site/
