@@ -30,6 +30,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment.yml
+          cache-environment: true
 
       - name: Check for myst.yml tags
         id: myst-tags
