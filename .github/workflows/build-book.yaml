@@ -3,10 +3,6 @@ name: build-book
 on:
   workflow_call:
 
-env:
-  # the BASE_URL environment variable needs to be set if building with myst
-  BASE_URL: "/${{ github.event.repository.name }}"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -77,5 +73,5 @@ jobs:
           python - <<- 'EOF' >> "$GITHUB_STEP_SUMMARY"
           import urllib.parse, os; 
           component = urllib.parse.quote_plus(os.environ['URL'])
-          print(f"Preview this build at https://jupyterbook.pub/repo/{component}/")
+          print(f"Preview this build at https://hub.projectpythia.org/services/jupyterbook-pub/repo/{component}/")
           EOF
