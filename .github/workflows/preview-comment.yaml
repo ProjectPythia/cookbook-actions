@@ -80,7 +80,7 @@ jobs:
           artifact_id="${raw_url##*/}"
           # Rewrite into the form https://github.com/<ORG>/<REPO>/actions/runs/<RUN-ID>/artifacts/<ARTIFACT-ID>
           proper_url="https://github.com/${{ github.repository  }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts/${artifact_id}"
-          echo "url=${proper_url}" >> "$GITHUB_ENV"
+          echo "SITE_URL=${proper_url}" >> "$GITHUB_ENV"
 
       - name: Set preview URL
         if: |
