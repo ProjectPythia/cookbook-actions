@@ -73,5 +73,6 @@ jobs:
           import urllib.parse, os; 
           component = urllib.parse.quote_plus(os.environ['URL'])
           preview_url = f"https://hub.projectpythia.org/services/jupyterbook-pub/repo/{component}/"
-          print(f"Preview this build at {preview_url}", os.environ["GITHUB_STEP_SUMMARY"])
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+            f.write(f"Preview this build at {preview_url}")
         shell: python {0}

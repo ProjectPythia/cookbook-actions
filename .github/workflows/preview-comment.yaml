@@ -84,12 +84,12 @@ jobs:
         id: preview-url
         run: |
           # Escape component
-          python - <<- 'EOF' >> "$GITHUB_STEP_SUMMARY"
           import urllib.parse, os; 
           component = urllib.parse.quote_plus(os.environ['SITE_URL'])
           preview_url = f"https://hub.projectpythia.org/services/jupyterbook-pub/repo/{component}/"
-          print(f"url={preview_url}", file=os.environ["GITHUB_OUTPUT"])
-          EOF
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"url={preview_url}")
+        shell: python {0}
 
       - name: Finalize preview comment
         if: |
