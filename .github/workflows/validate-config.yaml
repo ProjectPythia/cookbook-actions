@@ -3,17 +3,17 @@ name: validate-config
 on:
   workflow_call:
 
+concurrency:
+  group: ${{ github.workflow }}=${{ github.head_ref}}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -leo pipefail {0}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
         with:
-          # TODO: imrprove this
           repository: ProjectPythia/cookbook-actions
           ref: feat/clinder
           sparse-checkout: |
