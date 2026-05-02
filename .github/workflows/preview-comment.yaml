@@ -71,7 +71,7 @@ jobs:
           gh api \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
-            /repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.workflow_run.id }}/artifacts \
+            /repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts \
             -q '"SITE_URL=\(.artifacts | map(select(.name == "site))[0].url)"' >> "$GITHUB_ENV"
 
       - name: Set preview URL
