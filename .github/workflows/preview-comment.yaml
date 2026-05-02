@@ -2,6 +2,20 @@ name: preview-comment
 
 on:
   workflow_call:
+    inputs:
+      pull_request_number:
+        description: 'Number of the Pull Request event that needs commenting'
+        required: true
+        type: string
+      sha:
+        description: 'SHA of the commit associated with this Pull Request'
+        required: true
+        type: string
+      site_name: 
+        description: 'Name of the website in comment'
+        required: false
+        default: "The Cookbook"
+        type: string
 
 jobs:
   comment:
@@ -13,7 +27,7 @@ jobs:
       - uses: actions/checkout@v6
       - name: Fetch Repo Name
         id: repo-name
-        run: echo "value=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_OUTPUT # just the repo name, not owner
+        run: echo "value=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_OUTPUT  # just the repo name, not owner
 
       - name: Set message value
         run: |
@@ -23,9 +37,9 @@ jobs:
         uses: peter-evans/find-comment@v4
         id: fc
         with:
-          issue-number: "${{ github.event.pull_request.number }}"
-          comment-author: "github-actions[bot]"
-          body-includes: "${{ env.comment_message }}"
+          issue-number: '${{ inputs.pull_request_number }}'
+          comment-author: 'github-actions[bot]'
+          body-includes: '${{ env.comment_message }}'
 
       - name: Create preview comment
         if: |
@@ -33,10 +47,10 @@ jobs:
           && steps.fc.outputs.comment-id == ''
         uses: peter-evans/create-or-update-comment@v5
         with:
-          issue-number: "${{ github.event.pull_request.number }}"
+          issue-number: ${{ inputs.pull_request_number }}
           body: |
             ${{ env.comment_message }}
-            🔍 Git commit SHA: ${{ github.sha }}
+            🔍 Git commit SHA: ${{ inputs.sha }}
             ✅ Deployment Preview URL: In Progress
 
       - name: Update preview comment
@@ -49,7 +63,7 @@ jobs:
           edit-mode: replace
           body: |
             ${{ env.comment_message }}
-            🔍 Git commit SHA: ${{ github.sha }}
+            🔍 Git commit SHA: ${{ inputs.sha }}
             ✅ Deployment Preview URL: In Progress
 
       - name: Stash the artifact URL
@@ -57,8 +71,8 @@ jobs:
           gh api \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
-            /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts \
-            -q '"SITE_URL=\(.artifacts | map(select(.name == "cookbook-ast"))[0].url)"' >> "$GITHUB_ENV"
+            /repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.workflow_run.id }}/artifacts \
+            -q '"SITE_URL=\(.artifacts | map(select(.name == "site))[0].url)"' >> "$GITHUB_ENV"
 
       - name: Set preview URL
         if: |
@@ -84,5 +98,6 @@ jobs:
           edit-mode: replace
           body: |
             ${{ env.comment_message }}
-            🔍 Git commit SHA: ${{ github.sha }}
+            🔍 Git commit SHA: ${{ inputs.sha }}
             ✅ Deployment Preview URL: ${{ steps.preview-url.outputs.url }}
+
