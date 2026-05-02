@@ -21,9 +21,10 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: site
+          path: ./site
 
       - name: Build HTML
-        run: jupyter-book-site-renderer --site ./site --html ./html || ls
+        run: jupyter-book-site-renderer --site ./site --html ./html
         env:
           BASE_URL: "/${{ github.event.repository.name }}"
 
