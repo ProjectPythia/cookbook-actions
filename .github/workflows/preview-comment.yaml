@@ -88,7 +88,7 @@ jobs:
           import urllib.parse, os; 
           component = urllib.parse.quote_plus(os.environ['SITE_URL'])
           preview_url = f"https://hub.projectpythia.org/services/jupyterbook-pub/repo/{component}/"
-          print(f"url={preview_url}", os.environ["GITHUB_OUTPUT"])
+          print(f"url={preview_url}", file=os.environ["GITHUB_OUTPUT"])
           EOF
 
       - name: Finalize preview comment
