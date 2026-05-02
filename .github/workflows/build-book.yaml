@@ -70,9 +70,8 @@ jobs:
           echo "URL=${{ steps.site-artifact.outputs.artifact-url }}" >> "$GITHUB_ENV"
       - name: Display the preview URL
         run: |
-          # Escape component
-          python - <<- 'EOF' >> "$GITHUB_STEP_SUMMARY"
           import urllib.parse, os; 
           component = urllib.parse.quote_plus(os.environ['URL'])
-          print(f"Preview this build at https://hub.projectpythia.org/services/jupyterbook-pub/repo/{component}/")
-          EOF
+          preview_url = f"https://hub.projectpythia.org/services/jupyterbook-pub/repo/{component}/"
+          print(f"Preview this build at {preview_url}", os.environ["GITHUB_STEP_SUMMARY"])
+        shell: python {0}
