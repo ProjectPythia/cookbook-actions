@@ -1,0 +1,47 @@
+name: deploy-book
+
+on:
+  workflow_call:
+
+jobs:
+  build-html:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -leo pipefail {0}
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: "pip" # caching pip dependencies
+
+      - name: Install builder
+        run: pip install "jupyter-book-site-renderer>=0.0.3"
+
+      - name: Download site build
+        uses: actions/download-artifact@v8
+        with:
+          name: site
+
+      - name: Build HTML
+        run: jupyter-book-site-renderer --site ./site --html ./html || ls
+        env:
+          BASE_URL: "/${{ github.event.repository.name }}"
+
+      - name: Upload static files as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: html/
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-html
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

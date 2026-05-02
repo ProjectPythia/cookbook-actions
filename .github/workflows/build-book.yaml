@@ -60,8 +60,9 @@ jobs:
         id: site-artifact
         uses: actions/upload-artifact@v6
         with:
-          name: cookbook-ast
+          name: site
           path: _build/site/
+          retention-days: 7
 
       - name: Stash the artifact URL
         run: |
