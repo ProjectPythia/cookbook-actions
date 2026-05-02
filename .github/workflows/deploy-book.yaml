@@ -24,9 +24,7 @@ jobs:
           path: ./site
 
       - name: Build HTML
-        run: jupyter-book-site-renderer --site ./site --html ./html
-        env:
-          BASE_URL: "/${{ github.event.repository.name }}"
+        run: jupyter-book-site-renderer --site ./site --html ./html --base-url="/${{ github.event.repository.name }}"
 
       - name: Upload static files as artifact
         id: deployment
