@@ -37,6 +37,7 @@ concurrency:
 jobs:
   link-checker:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         shell: bash -l {0}
