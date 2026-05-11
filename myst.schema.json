@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/projectpythia/pythia-config/myst.schema.json",
+  "$ref": "#/definitions/myst.yml",
+  "definitions": {
+    "myst.yml": {
+      "type": "object",
+      "required": ["project"],
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/project"
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["title", "thumbnail", "tags"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "thumbnail": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["cookbook:build-on-binder"]
+              },
+              {
+                "not": {
+                  "type": "string",
+                  "pattern": "^cookbook:.*"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

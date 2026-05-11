@@ -66,20 +66,35 @@ jobs:
             🔍 Git commit SHA: ${{ inputs.sha }}
             ✅ Deployment Preview URL: In Progress
 
+      - name: Stash the artifact URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+        run: |
+          # Get the URL of the form https://api.github.com/repos/<ORG>/<REPO>/actions/artifacts/<ARTIFACT-ID>
+          raw_url=$(gh api \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            /repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts \
+            -q '.artifacts | map(select(.name == "site"))[0].url' )
+          artifact_id="${raw_url##*/}"
+          # Rewrite into the form https://github.com/<ORG>/<REPO>/actions/runs/<RUN-ID>/artifacts/<ARTIFACT-ID>
+          proper_url="https://github.com/${{ github.repository  }}/actions/runs/${{ github.event.workflow_run.id }}/artifacts/${artifact_id}"
+          echo "SITE_URL=${proper_url}" >> "$GITHUB_ENV"
+
       - name: Set preview URL
         if: |
           github.event.workflow_run.conclusion == 'success'
           && steps.fc.outputs.comment-id != ''
         id: preview-url
         run: |
-          shopt -s nocasematch
-          if [[ ${{ steps.repo-name.outputs.value }} = ${{ github.repository_owner }}.github.io ]]
-          then
-            echo "url=https://${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}" >> $GITHUB_OUTPUT
-          else
-            echo "url=https://${{ github.repository_owner }}.github.io/${{ steps.repo-name.outputs.value }}/_preview/${{ inputs.pull_request_number }}" >> $GITHUB_OUTPUT
-          fi
-          shopt -u nocasematch
+          # Escape component
+          import urllib.parse, os; 
+          component = urllib.parse.quote_plus(os.environ['SITE_URL'])
+          preview_url = f"https://hub.projectpythia.org/services/jupyterbook-pub/repo/{component}/"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+            f.write(f"url={preview_url}")
+        shell: python {0}
 
       - name: Finalize preview comment
         if: |
@@ -93,3 +108,4 @@ jobs:
             ${{ env.comment_message }}
             🔍 Git commit SHA: ${{ inputs.sha }}
             ✅ Deployment Preview URL: ${{ steps.preview-url.outputs.url }}
+
