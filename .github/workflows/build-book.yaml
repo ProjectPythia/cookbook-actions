@@ -36,7 +36,7 @@ jobs:
       - name: Setup execution environment on a BinderHub
         if: steps.myst-tags.outputs.build-on-binder
         # This action sets up evironment variables for e.g. mystmd to recognise and use
-        uses: 2i2c-org/clinder@action-v1
+        uses: 2i2c-org/clinder@main
         with:
           hub-url: https://binder.projectpythia.org/
 
