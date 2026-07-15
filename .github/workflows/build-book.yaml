@@ -99,7 +99,7 @@ jobs:
     steps:
       - name: Checkout the code from the repo
         if: inputs.build_from_code_artifact == 'false'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       #  The next two steps should replicated checking out the code
       - name: Download code artifact
