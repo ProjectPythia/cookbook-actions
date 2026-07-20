@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: ProjectPythia/cookbook-actions
-          ref: feat/clinder
+          ref: HEAD
           sparse-checkout: |
             myst.schema.json
           sparse-checkout-cone-mode: false
