@@ -1,14 +1,15 @@
-name: validate-config
+name: Validate myst.yml
 
 on:
   workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}=${{ github.head_ref}}
+  group: ${{ github.workflow }}-${{ github.head_ref}}
   cancel-in-progress: true
 
 jobs:
-  build:
+  validate:
+    name: Run validator
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
