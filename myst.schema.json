@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/projectpythia/pythia-config/myst.schema.json",
+  "$ref": "#/definitions/myst.yml",
+  "definitions": {
+    "myst.yml": {
+      "type": "object",
+      "required": ["project"],
+      "properties": {
+        "project": {
+          "$ref": "#/definitions/project"
+        }
+      }
+    },
+    "cookbook-tag": {
+      "type": "string",
+      "enum": ["cookbook:build-on-binder"]
+    },
+    "project": {
+      "type": "object",
+      "required": ["title", "thumbnail", "tags"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "thumbnail": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "$comment": "Ifn we have a `cookbook:` tag prefix, require that it validates",
+          "items": {
+            "oneOf": [
+              { "$ref": "#/definitions/cookbook-tag" },
+              {
+                "not": {
+                  "type": "string",
+                  "pattern": "^cookbook:.*"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

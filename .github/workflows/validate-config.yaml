@@ -1,0 +1,29 @@
+name: Validate myst.yml
+
+on:
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref}}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Run validator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: ProjectPythia/cookbook-actions
+          ref: feat/clinder
+          sparse-checkout: |
+            myst.schema.json
+          sparse-checkout-cone-mode: false
+      - name: Run myst.yml validator
+        run: |
+          npx --yes ajv-cli \
+            validate \
+            -s myst.schema.json \
+            -d myst.yml \
+            --spec=draft2020
