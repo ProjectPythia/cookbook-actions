@@ -58,11 +58,6 @@ on:
         required: false
         default: '/${{ github.event.repository.name }}'
         type: string
-      use_binder:
-        description: 'Should we open a remote binder session before running a myst build?'
-        required: false
-        default: 'false'
-        type: string
 
     secrets:
       PRIVATE_KEY:
@@ -155,8 +150,13 @@ jobs:
           pip install git+https://github.com/pangeo-gallery/binderbot.git
           conda list
 
+      - name: Check for myst.yml tags
+        id: myst-tags
+        run: |
+          yq '.project.tags | filter(test("^cookbook:"))[] | sub("cookbook:(.*)","$1=1")' myst.yml | tee "$GITHUB_OUTPUT"
+  
       - name: Setup execution environment on a BinderHub
-        if: inputs.use_binder == 'true'
+        if: steps.myst-tags.outputs.build-on-binder
           # This action sets up evironment variables for e.g. mystmd to recognise and use
         uses: 2i2c-org/clinder@main
         with:
