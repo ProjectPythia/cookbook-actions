@@ -123,29 +123,6 @@ jobs:
         id: get-env
         uses: FranzDiebold/github-env-vars-action@v2
       
-      - name: Check for config file
-        id: check_config
-        uses: andstor/file-existence-action@v3
-        with:
-          files: "${{ inputs.path_to_notebooks }}/_config.yml"
-      
-      - name: Parse config file
-        id: parse_config
-        if: steps.check_config.outputs.files_exists == 'true'
-        uses: CumulusDS/get-yaml-paths-action@v1.0.2
-        with:
-          file: ${{ inputs.path_to_notebooks }}/_config.yml
-          execute_notebooks: execute.execute_notebooks
-          binderhub_url: sphinx.config.html_theme_options.launch_buttons.binderhub_url
-          timeout: execute.timeout
-
-      - name: Echo values from config file
-        if: steps.check_config.outputs.files_exists == 'true'
-        run: |
-          echo ${{ steps.parse_config.outputs.execute_notebooks }}
-          echo ${{ steps.parse_config.outputs.binderhub_url }}
-          echo ${{ steps.parse_config.outputs.timeout }}
-
       - name: Test for environment change
         id: env_change
         uses: tj-actions/changed-files@v47
@@ -173,69 +150,18 @@ jobs:
           pip install git+https://github.com/pangeo-gallery/binderbot.git
           conda list
 
-      - name: Get paths to notebook files
-        if: |
-          steps.parse_config.outputs.execute_notebooks == 'binder'
-        # This will find ALL *.ipynb files in the repo
-        #  It would be better to cross-check this against the _toc.yml file
-        #  to avoid unneccesary execution of notebooks that aren't included in the book
-        shell: python
+      - name: Check for myst.yml tags
+        id: myst-tags
         run: |
-          import glob
-          notebooks = glob.glob('**/*.ipynb', recursive=True)
-          outfile = open("notebook_paths", "w")
-          for path in notebooks:
-              outfile.write(path + ' ')
-          outfile.close() # Writing these out to a file because I can't figure out how to set an environment variable from a python script 
-
-      - name: Execute notebooks via binderbot using existing image
-        if: |
-          ( steps.parse_config.outputs.execute_notebooks == 'binder'
-          && steps.env_change.outputs.any_changed != 'true' )
-        env:
-          ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
-          ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
-          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
-          AQS_KEY: ${{ secrets.AQS_KEY }}
-          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
-          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
-        run: |
-          NOTEBOOKS=$(cat notebook_paths)
-          echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
-          echo "We will now execute these notebooks: $NOTEBOOKS"
-          echo "using the existing binder image from the main branch"
-          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.repository }} --ref main --nb-timeout ${{ steps.parse_config.outputs.timeout }} $NOTEBOOKS --pass-env-var ARM_USERNAME --pass-env-var ARM_PASSWORD
-
-      - name: Execute notebooks via binderbot using new image with latest environment
-        if: |
-            ( steps.parse_config.outputs.execute_notebooks == 'binder'
-            && steps.env_change.outputs.any_changed == 'true' )
-        env:
-          ARM_USERNAME: ${{ secrets.ARM_USERNAME }}
-          ARM_PASSWORD: ${{ secrets.ARM_PASSWORD }}
-          AQS_USERNAME: ${{ secrets.AQS_USERNAME }}
-          AQS_KEY: ${{ secrets.AQS_KEY }}
-          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
-          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
-        run: |
-          NOTEBOOKS=$(cat notebook_paths)
-          echo 'Retrieved binder_url: ${{ steps.parse_config.outputs.binderhub_url }}'
-          echo "We will now execute these notebooks: $NOTEBOOKS"
-          echo "using the updated environment file in this branch to build a new image"
-          python -m binderbot.cli --binder-url ${{ steps.parse_config.outputs.binderhub_url }} --repo ${{ github.actor }}/$CI_REPOSITORY_NAME --ref $CI_ACTION_REF_NAME --nb-timeout ${{ steps.parse_config.outputs.timeout }} $NOTEBOOKS --pass-env-var ARM_USERNAME --pass-env-var ARM_PASSWORD
-
-      - name: Disable notebook execution during jupyterbook build
-        if: |
-          steps.parse_config.outputs.execute_notebooks == 'binder'
-        shell: python
-        run: |
-          import yaml
-          with open('${{ inputs.path_to_notebooks }}/_config.yml') as f:
-            data = yaml.safe_load(f)
-          data['execute']['execute_notebooks'] = 'off'
-          with open('${{ inputs.path_to_notebooks }}/_config.yml', 'w') as f:
-            yaml.dump(data, f)
-
+          yq '.project.tags | filter(test("^cookbook:"))[] | sub("cookbook:(.*)","$1=1")' myst.yml | tee "$GITHUB_OUTPUT"
+  
+      - name: Setup execution environment on a BinderHub
+        if: steps.myst-tags.outputs.build-on-binder
+          # This action sets up evironment variables for e.g. mystmd to recognise and use
+        uses: 2i2c-org/clinder@main
+        with:
+          hub-url: https://binder.projectpythia.org/      
+      
       - name: Build the book
         # Assumption is that if execute_notebooks != 'binder' then the _config.yml file must be set to execute notebooks during build
         env:
