@@ -153,7 +153,7 @@ jobs:
       - name: Check for myst.yml tags
         id: myst-tags
         run: |
-          yq '.project.tags | filter(test("^cookbook:"))[] | sub("cookbook:(.*)","$1=1")' myst.yml | tee "$GITHUB_OUTPUT"
+          yq '.project.tags | filter(test("^cookbook:"))[] | sub("cookbook:(.*)","$1=1")' ${{ inputs.path_to_notebooks }}/myst.yml | tee "$GITHUB_OUTPUT"
   
       - name: Setup execution environment on a BinderHub
         if: steps.myst-tags.outputs.build-on-binder
