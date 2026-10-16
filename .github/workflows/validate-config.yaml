@@ -12,7 +12,7 @@ jobs:
     name: Run validator
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Download schema
         run: curl -fsSl -O https://raw.githubusercontent.com/ProjectPythia/cookbook-actions/refs/heads/main/myst.schema.json
       - name: Run myst.yml validator
